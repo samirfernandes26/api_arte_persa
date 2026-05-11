@@ -2,9 +2,15 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { StatusFatura as StatusFaturaPrisma } from '@prisma/client';
+import { Prisma, StatusFatura as StatusFaturaPrisma } from '@prisma/client';
+import { gerarCodigoExterno } from '../comum/utilitarios/codigo-externo.util';
+import {
+  arredondarMoeda,
+  paraDecimal,
+} from '../comum/utilitarios/dinheiro.util';
 import { FilasService } from '../filas/filas.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
@@ -37,39 +43,31 @@ export class FaturasService {
       throw new ConflictException('Esta ordem de servico ja possui uma fatura.');
     }
 
-    const numero = dto.numero ?? (await this.gerarNumeroFatura());
-    const valorSubtotal = dto.valor_subtotal ?? Number(ordem.valor_subtotal);
-    const valorDesconto = dto.valor_desconto ?? Number(ordem.valor_desconto);
-    const valorImpostos = dto.valor_impostos ?? 0;
-    const valorTotal =
-      dto.valor_total ?? valorSubtotal - valorDesconto + valorImpostos;
+    const valorSubtotal = paraDecimal(dto.valor_subtotal ?? ordem.valor_subtotal);
+    const valorDesconto = paraDecimal(dto.valor_desconto ?? ordem.valor_desconto);
+    const valorImpostos = paraDecimal(dto.valor_impostos ?? 0);
+    const valorTotal = dto.valor_total
+      ? paraDecimal(dto.valor_total)
+      : arredondarMoeda(valorSubtotal.minus(valorDesconto).plus(valorImpostos));
 
-    if (valorTotal < 0) {
+    if (valorTotal.isNegative()) {
       throw new BadRequestException('O valor total da fatura nao pode ser negativo.');
     }
 
-    const fatura = await this.prisma.fatura.create({
-      data: {
-        ordem_servico_id: dto.ordem_servico_id,
-        numero,
-        criado_por_id: usuarioAtual.sub,
-        atualizado_por_id: usuarioAtual.sub,
-        vencimento_em: dto.vencimento_em ? new Date(dto.vencimento_em) : undefined,
-        metodo_pagamento: dto.metodo_pagamento,
-        valor_subtotal: valorSubtotal,
-        valor_desconto: valorDesconto,
-        valor_impostos: valorImpostos,
-        valor_total: valorTotal,
-        observacoes: dto.observacoes,
-      },
-      include: this.includeCompleto(),
+    const fatura = await this.criarFaturaComNumeroSeguro({
+      dto,
+      usuarioAtual,
+      valorSubtotal,
+      valorDesconto,
+      valorImpostos,
+      valorTotal,
     });
 
     await this.filasService.adicionarTarefaNotificacao({
       canal: 'email',
       tipo: 'fatura_criada',
-      destinatario: ordem.cliente.email_principal ?? numero,
-      assunto: `Fatura ${numero} criada`,
+      destinatario: ordem.cliente.email_principal ?? fatura.numero,
+      assunto: `Fatura ${fatura.numero} criada`,
       mensagem: `A fatura da ordem ${ordem.codigo} foi criada.`,
       metadados: {
         fatura_id: fatura.id,
@@ -162,19 +160,73 @@ export class FaturasService {
     }
   }
 
-  private async gerarNumeroFatura() {
-    const agora = new Date();
-    const dataCodigo = agora.toISOString().slice(0, 10).replace(/-/g, '');
-    const inicioDia = new Date(agora);
-    inicioDia.setHours(0, 0, 0, 0);
+  private gerarNumeroFatura() {
+    return gerarCodigoExterno('FAT');
+  }
 
-    const quantidadeHoje = await this.prisma.fatura.count({
-      where: {
-        data_criacao: { gte: inicioDia },
-      },
-    });
+  private async criarFaturaComNumeroSeguro(entrada: {
+    dto: CriarFaturaDto;
+    usuarioAtual: PayloadToken;
+    valorSubtotal: Prisma.Decimal;
+    valorDesconto: Prisma.Decimal;
+    valorImpostos: Prisma.Decimal;
+    valorTotal: Prisma.Decimal;
+  }) {
+    for (let tentativa = 1; tentativa <= 5; tentativa += 1) {
+      const numero = entrada.dto.numero ?? this.gerarNumeroFatura();
 
-    return `FAT-${dataCodigo}-${String(quantidadeHoje + 1).padStart(4, '0')}`;
+      try {
+        return await this.prisma.fatura.create({
+          data: {
+            ordem_servico_id: entrada.dto.ordem_servico_id,
+            numero,
+            criado_por_id: entrada.usuarioAtual.sub,
+            atualizado_por_id: entrada.usuarioAtual.sub,
+            vencimento_em: entrada.dto.vencimento_em
+              ? new Date(entrada.dto.vencimento_em)
+              : undefined,
+            metodo_pagamento: entrada.dto.metodo_pagamento,
+            valor_subtotal: entrada.valorSubtotal,
+            valor_desconto: entrada.valorDesconto,
+            valor_impostos: entrada.valorImpostos,
+            valor_total: entrada.valorTotal,
+            observacoes: entrada.dto.observacoes,
+          },
+          include: this.includeCompleto(),
+        });
+      } catch (erro) {
+        if (this.ehColisaoCampoUnico(erro, 'numero')) {
+          continue;
+        }
+
+        if (this.ehColisaoCampoUnico(erro, 'ordem_servico_id')) {
+          throw new ConflictException('Esta ordem de servico ja possui uma fatura.');
+        }
+
+        throw erro;
+      }
+    }
+
+    throw new InternalServerErrorException(
+      'Nao foi possivel gerar um numero unico para a fatura.',
+    );
+  }
+
+  private ehColisaoCampoUnico(erro: unknown, campo: string): boolean {
+    if (!(erro instanceof Prisma.PrismaClientKnownRequestError)) {
+      return false;
+    }
+
+    if (erro.code !== 'P2002') {
+      return false;
+    }
+
+    const alvo = erro.meta?.target;
+    if (Array.isArray(alvo)) {
+      return alvo.includes(campo);
+    }
+
+    return typeof alvo === 'string' && alvo.includes(campo);
   }
 
   private includeCompleto() {

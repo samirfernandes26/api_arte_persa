@@ -3,7 +3,7 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class ServicoPrisma extends PrismaClient implements OnModuleInit {
   constructor() {
     const urlBancoDados = process.env.URL_BANCO_DADOS;
 
@@ -35,3 +35,5 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     });
   }
 }
+
+export { ServicoPrisma as PrismaService };

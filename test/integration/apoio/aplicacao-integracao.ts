@@ -1,8 +1,14 @@
 import 'reflect-metadata';
-import { ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
+import { FiltroExcecaoGlobal } from '../../../src/comum/filtros/filtro-excecao-global';
 import { ModuloAplicacao } from '../../../src/modulo-aplicacao';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { S3Service } from '../../../src/s3/s3.service';
@@ -25,8 +31,21 @@ export async function criarAplicacaoIntegracao(): Promise<ContextoAplicacaoInteg
 
   const app = modulo.createNestApplication<NestExpressApplication>();
   const configService = app.get(ConfigService);
+  const reflector = app.get(Reflector);
 
   app.setGlobalPrefix(configService.get<string>('PREFIXO_GLOBAL_API', 'api'));
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
+    }),
+  );
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['ETag'],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -37,6 +56,8 @@ export async function criarAplicacaoIntegracao(): Promise<ContextoAplicacaoInteg
       },
     }),
   );
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+  app.useGlobalFilters(new FiltroExcecaoGlobal());
 
   await app.init();
 

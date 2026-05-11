@@ -50,6 +50,8 @@ export const esquemaAmbiente = z.object({
   PORTA_APLICACAO: inteiroDoAmbiente.default(3000),
   HOST_APLICACAO: z.string().min(1).default('0.0.0.0'),
   PREFIXO_GLOBAL_API: z.string().min(1).default('api'),
+  CORS_ORIGENS_PERMITIDAS: z.string().min(1).default('http://localhost:3000'),
+  CORS_CREDENCIAIS: booleanoDoAmbiente.default(true),
   FUSO_HORARIO_PADRAO: z.string().min(1).default('America/Sao_Paulo'),
   NIVEL_LOG: z.string().min(1).default('log,debug,warn,error'),
   URL_BANCO_DADOS: z.string().min(1),
@@ -78,6 +80,8 @@ export const esquemaAmbiente = z.object({
   JWT_EMISSOR: z.string().min(1),
   JWT_AUDIENCIA: z.string().min(1),
   RODADAS_HASH_SENHA: inteiroDoAmbiente.default(10),
+  THROTTLER_TTL_SEGUNDOS: inteiroDoAmbiente.default(60),
+  THROTTLER_LIMITE: inteiroDoAmbiente.default(60),
   AWS_ACCESS_KEY_ID: z.string().min(1),
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_SESSION_TOKEN: z.preprocess(

@@ -6,6 +6,7 @@ import {
 } from '../../../src/s3/s3.types';
 
 export class S3FalsoMemoria {
+  private readonly bucketPadrao = 'bucket-teste-integracao';
   private readonly objetos = new Map<
     string,
     {
@@ -31,7 +32,7 @@ export class S3FalsoMemoria {
     });
 
     return {
-      bucket: 'bucket-teste-integracao',
+      bucket: this.bucketPadrao,
       chave,
       url,
       etag: `etag-${chave}`,
@@ -79,6 +80,10 @@ export class S3FalsoMemoria {
 
   getObjectUrl(chave: string): string {
     return this.obterUrlObjeto(chave);
+  }
+
+  obterBucketPadrao(): string {
+    return this.bucketPadrao;
   }
 
   async obterBufferObjeto(chave: string): Promise<Buffer> {

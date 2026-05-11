@@ -6,6 +6,7 @@ export function criarPayloadOrdemServico(parametros: {
   responsavelId?: string;
   aprovadoPorDescontoId?: string;
   percentualDesconto?: number;
+  motivoDesconto?: string | null;
 }) {
   sequenciaOrdens += 1;
 
@@ -16,7 +17,10 @@ export function criarPayloadOrdemServico(parametros: {
     aprovado_por_desconto_id: parametros.aprovadoPorDescontoId,
     percentual_desconto: parametros.percentualDesconto ?? 5,
     valor_frete: 30,
-    motivo_desconto: 'Campanha de captacao',
+    motivo_desconto:
+      parametros.motivoDesconto === undefined
+        ? 'Campanha de captacao'
+        : parametros.motivoDesconto,
     observacoes_internas: `Ordem de teste ${sequenciaOrdens}`,
     observacoes_cliente: 'Retirar e entregar no horario comercial.',
     itens: [

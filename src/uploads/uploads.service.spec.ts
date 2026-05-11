@@ -21,6 +21,21 @@ describe('UploadsService', () => {
   const s3Mock = {
     obterUrlPreAssinada: jest.fn(),
     obterUrlObjeto: jest.fn(),
+    obterBucketPadrao: jest.fn(),
+  };
+
+  const configServiceMock = {
+    get: jest.fn((chave: string, valorPadrao?: unknown) => {
+      if (chave === 'LIMITE_MB_ARQUIVO_IMAGEM') {
+        return 15;
+      }
+
+      if (chave === 'TIPOS_MIME_PERMITIDOS_IMAGEM') {
+        return 'image/jpeg,image/png,image/webp';
+      }
+
+      return valorPadrao;
+    }),
   };
 
   let service: UploadsService;
@@ -37,7 +52,12 @@ describe('UploadsService', () => {
       cabecalhos: {},
     });
     s3Mock.obterUrlObjeto.mockReturnValue('https://cdn.exemplo/arquivo');
-    service = new UploadsService(prismaMock as never, s3Mock as never);
+    s3Mock.obterBucketPadrao.mockReturnValue('bucket-teste');
+    service = new UploadsService(
+      configServiceMock as never,
+      prismaMock as never,
+      s3Mock as never,
+    );
   });
 
   afterEach(() => {

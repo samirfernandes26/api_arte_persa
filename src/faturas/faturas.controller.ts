@@ -3,9 +3,14 @@ import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import {
+  serializarDto,
+  serializarListaDto,
+} from '../comum/utilitarios/serializacao.util';
 import { AtualizarStatusFaturaDto } from './dto/atualizar-status-fatura.dto';
 import { ConsultarFaturasDto } from './dto/consultar-faturas.dto';
 import { CriarFaturaDto } from './dto/criar-fatura.dto';
+import { FaturaResponseDto } from './dto/fatura-response.dto';
 import { FaturasService } from './faturas.service';
 
 @Controller('faturas')
@@ -14,11 +19,14 @@ export class FaturasController {
 
   @Perfis(PerfilUsuario.SUPERVISOR, PerfilUsuario.MASTER)
   @Post()
-  criar(
+  async criar(
     @Body() dto: CriarFaturaDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.faturasService.criar(dto, usuarioAtual);
+    return serializarDto(
+      FaturaResponseDto,
+      await this.faturasService.criar(dto, usuarioAtual),
+    );
   }
 
   @Perfis(
@@ -27,8 +35,11 @@ export class FaturasController {
     PerfilUsuario.MASTER,
   )
   @Get()
-  listar(@Query() consulta: ConsultarFaturasDto) {
-    return this.faturasService.listar(consulta);
+  async listar(@Query() consulta: ConsultarFaturasDto) {
+    return serializarListaDto(
+      FaturaResponseDto,
+      await this.faturasService.listar(consulta),
+    );
   }
 
   @Perfis(
@@ -37,17 +48,20 @@ export class FaturasController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.faturasService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    return serializarDto(FaturaResponseDto, await this.faturasService.buscarPorId(id));
   }
 
   @Perfis(PerfilUsuario.SUPERVISOR, PerfilUsuario.MASTER)
   @Patch(':id/status')
-  atualizarStatus(
+  async atualizarStatus(
     @Param('id') id: string,
     @Body() dto: AtualizarStatusFaturaDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.faturasService.atualizarStatus(id, dto, usuarioAtual);
+    return serializarDto(
+      FaturaResponseDto,
+      await this.faturasService.atualizarStatus(id, dto, usuarioAtual),
+    );
   }
 }

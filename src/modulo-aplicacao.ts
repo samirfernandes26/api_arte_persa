@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AutenticacaoModule } from './autenticacao/autenticacao.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { GuardaAutenticacaoJwt } from './comum/guardas/guarda-autenticacao-jwt';
@@ -38,6 +39,17 @@ import { ControladorAplicacao } from './controlador-aplicacao';
         },
       }),
     }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: configService.get<number>('THROTTLER_TTL_SEGUNDOS', 60) * 1000,
+            limit: configService.get<number>('THROTTLER_LIMITE', 60),
+          },
+        ],
+      }),
+    }),
     PrismaModule,
     S3Module,
     FilasModule,
@@ -56,6 +68,10 @@ import { ControladorAplicacao } from './controlador-aplicacao';
     {
       provide: APP_GUARD,
       useClass: GuardaAutenticacaoJwt,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_GUARD,

@@ -91,4 +91,28 @@ describe('Integracao - Uploads e S3', () => {
     expect(clienteAtualizado.body.arquivos[0].chave_s3).toBe(presigned.body.chave);
     expect(s3Falso.listarChaves()).toContain(presigned.body.chave);
   });
+
+  it('rejeita confirmacao de upload quando a chave nao pertence ao prefixo do cliente', async () => {
+    const { credenciais } = await criarPrimeiroMaster(app);
+    const loginMaster = await autenticar(app, credenciais.email, credenciais.senha);
+
+    const cliente = await request(app.getHttpServer())
+      .post('/api/clientes')
+      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .send(criarPayloadCliente())
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/uploads/confirmacoes/arquivo-cliente')
+      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .send({
+        cliente_id: cliente.body.id,
+        chave_s3: 'clientes/00000000-0000-0000-0000-000000000000/arquivos/falso.pdf',
+        nome_arquivo: 'falso.pdf',
+        tipo_mime: 'application/pdf',
+        tamanho_bytes: 1024,
+        rotulo: 'Arquivo invalido',
+      })
+      .expect(400);
+  });
 });

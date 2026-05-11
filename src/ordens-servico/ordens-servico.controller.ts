@@ -3,10 +3,18 @@ import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import {
+  serializarDto,
+  serializarListaDto,
+} from '../comum/utilitarios/serializacao.util';
 import { AtualizarOrdemServicoDto } from './dto/atualizar-ordem-servico.dto';
 import { AtualizarStatusOrdemServicoDto } from './dto/atualizar-status-ordem-servico.dto';
 import { ConsultarOrdensServicoDto } from './dto/consultar-ordens-servico.dto';
 import { CriarOrdemServicoDto } from './dto/criar-ordem-servico.dto';
+import {
+  OrdemServicoResponseDto,
+  OrdemServicoResumoResponseDto,
+} from './dto/ordem-servico-response.dto';
 import { OrdensServicoService } from './ordens-servico.service';
 
 @Controller('ordens-servico')
@@ -19,11 +27,14 @@ export class OrdensServicoController {
     PerfilUsuario.MASTER,
   )
   @Post()
-  criar(
+  async criar(
     @Body() dto: CriarOrdemServicoDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.ordensServicoService.criar(dto, usuarioAtual);
+    return serializarDto(
+      OrdemServicoResponseDto,
+      await this.ordensServicoService.criar(dto, usuarioAtual),
+    );
   }
 
   @Perfis(
@@ -32,8 +43,11 @@ export class OrdensServicoController {
     PerfilUsuario.MASTER,
   )
   @Get()
-  listar(@Query() consulta: ConsultarOrdensServicoDto) {
-    return this.ordensServicoService.listar(consulta);
+  async listar(@Query() consulta: ConsultarOrdensServicoDto) {
+    return serializarListaDto(
+      OrdemServicoResumoResponseDto,
+      await this.ordensServicoService.listar(consulta),
+    );
   }
 
   @Perfis(
@@ -42,8 +56,11 @@ export class OrdensServicoController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.ordensServicoService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    return serializarDto(
+      OrdemServicoResponseDto,
+      await this.ordensServicoService.buscarPorId(id),
+    );
   }
 
   @Perfis(
@@ -52,12 +69,15 @@ export class OrdensServicoController {
     PerfilUsuario.MASTER,
   )
   @Patch(':id')
-  atualizar(
+  async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarOrdemServicoDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.ordensServicoService.atualizar(id, dto, usuarioAtual);
+    return serializarDto(
+      OrdemServicoResponseDto,
+      await this.ordensServicoService.atualizar(id, dto, usuarioAtual),
+    );
   }
 
   @Perfis(
@@ -66,12 +86,15 @@ export class OrdensServicoController {
     PerfilUsuario.MASTER,
   )
   @Patch(':id/status')
-  atualizarStatus(
+  async atualizarStatus(
     @Param('id') id: string,
     @Body() dto: AtualizarStatusOrdemServicoDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.ordensServicoService.atualizarStatus(id, dto, usuarioAtual);
+    return serializarDto(
+      OrdemServicoResponseDto,
+      await this.ordensServicoService.atualizarStatus(id, dto, usuarioAtual),
+    );
   }
 
   @Perfis(

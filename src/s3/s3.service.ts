@@ -20,8 +20,8 @@ import {
 } from './s3.types';
 
 @Injectable()
-export class S3Service {
-  private readonly logger = new Logger(S3Service.name);
+export class ServicoS3 {
+  private readonly logger = new Logger(ServicoS3.name);
   private readonly bucketPadrao: string;
   private readonly urlBasePublica?: string;
   private readonly expiracaoUpload: number;
@@ -220,6 +220,10 @@ export class S3Service {
     return this.obterUrlObjeto(chave, bucket);
   }
 
+  obterBucketPadrao(): string {
+    return this.bucketPadrao;
+  }
+
   async obterBufferObjeto(
     chave: string,
     bucket = this.bucketPadrao,
@@ -265,3 +269,5 @@ export class S3Service {
     return chaveNormalizada;
   }
 }
+
+export { ServicoS3 as S3Service };

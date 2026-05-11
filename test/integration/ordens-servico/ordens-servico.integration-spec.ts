@@ -224,4 +224,43 @@ describe('Integracao - Ordens de Servico', () => {
       ),
     ).toBe(true);
   });
+
+  it('exige motivo ao atualizar uma ordem para aplicar desconto', async () => {
+    const { credenciais } = await criarPrimeiroMaster(app);
+    const loginMaster = await autenticar(app, credenciais.email, credenciais.senha);
+
+    const servico = await request(app.getHttpServer())
+      .post('/api/servicos')
+      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .send(criarPayloadServico({ preco_base: 800 }))
+      .expect(201);
+
+    const cliente = await request(app.getHttpServer())
+      .post('/api/clientes')
+      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .send(criarPayloadCliente())
+      .expect(201);
+
+    const ordem = await request(app.getHttpServer())
+      .post('/api/ordens-servico')
+      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .send(
+        criarPayloadOrdemServico({
+          clienteId: cliente.body.id,
+          servicoCatalogoId: servico.body.id,
+          responsavelId: loginMaster.usuario.id,
+          percentualDesconto: 0,
+          motivoDesconto: '',
+        }),
+      )
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch(`/api/ordens-servico/${ordem.body.id}`)
+      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .send({
+        percentual_desconto: 5,
+      })
+      .expect(400);
+  });
 });

@@ -1,5 +1,6 @@
 import {
   ForbiddenException,
+  InternalServerErrorException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -9,12 +10,16 @@ import { JwtService } from '@nestjs/jwt';
 import { PerfilUsuario, TokenRefresh, Usuario } from '@prisma/client';
 import { compare, hash } from 'bcryptjs';
 import { randomUUID } from 'crypto';
+import ms from 'ms';
 import { StringValue } from 'ms';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { serializarDto } from '../comum/utilitarios/serializacao.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsuariosService } from '../usuarios/usuarios.service';
+import { UsuarioResponseDto } from '../usuarios/dto/usuario-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RespostaAutenticacaoDto } from './dto/resposta-autenticacao.dto';
 
 @Injectable()
 export class AutenticacaoService {
@@ -121,7 +126,7 @@ export class AutenticacaoService {
 
   async obterUsuarioAutenticado(usuarioId: string) {
     const usuario = await this.usuariosService.buscarPorId(usuarioId);
-    return this.serializarUsuario(usuario);
+    return serializarDto(UsuarioResponseDto, usuario);
   }
 
   private async gerarParTokens(
@@ -171,11 +176,11 @@ export class AutenticacaoService {
 
     await this.atualizarHashTokenRefresh(tokenRefreshPersistido, refreshToken);
 
-    return {
-      usuario: this.serializarUsuario(usuario),
+    return serializarDto(RespostaAutenticacaoDto, {
+      usuario,
       access_token: accessToken,
       refresh_token: refreshToken,
-    };
+    });
   }
 
   private async criarTokenRefreshPersistido(
@@ -183,8 +188,19 @@ export class AutenticacaoService {
     familiaToken: string,
     contexto: { ip?: string; userAgent?: string },
   ): Promise<TokenRefresh> {
-    const dias = 30;
-    const expiraEm = new Date(Date.now() + dias * 24 * 60 * 60 * 1000);
+    const tempoRefresh = this.configService.get<string>(
+      'JWT_TEMPO_REFRESH',
+      '30d',
+    ) as StringValue;
+    const intervaloMs = ms(tempoRefresh);
+
+    if (typeof intervaloMs !== 'number') {
+      throw new InternalServerErrorException(
+        'Nao foi possivel interpretar o tempo de expiracao do refresh token.',
+      );
+    }
+
+    const expiraEm = new Date(Date.now() + intervaloMs);
 
     return this.prisma.tokenRefresh.create({
       data: {
@@ -227,14 +243,4 @@ export class AutenticacaoService {
     });
   }
 
-  private serializarUsuario(usuario: Usuario) {
-    return {
-      id: usuario.id,
-      nome: usuario.nome,
-      email: usuario.email,
-      perfil: usuario.perfil,
-      ativo: usuario.ativo,
-      ultimo_login_em: usuario.ultimo_login_em,
-    };
-  }
 }

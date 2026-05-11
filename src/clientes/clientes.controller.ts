@@ -4,7 +4,12 @@ import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PaginacaoConsultaDto } from '../comum/dto/paginacao-consulta.dto';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import {
+  serializarDto,
+  serializarListaDto,
+} from '../comum/utilitarios/serializacao.util';
 import { AtualizarClienteDto } from './dto/atualizar-cliente.dto';
+import { ClienteResponseDto } from './dto/cliente-response.dto';
 import { CriarClienteDto } from './dto/criar-cliente.dto';
 import { ClientesService } from './clientes.service';
 
@@ -18,11 +23,14 @@ export class ClientesController {
     PerfilUsuario.MASTER,
   )
   @Post()
-  criar(
+  async criar(
     @Body() dto: CriarClienteDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.clientesService.criar(dto, usuarioAtual.sub);
+    return serializarDto(
+      ClienteResponseDto,
+      await this.clientesService.criar(dto, usuarioAtual.sub),
+    );
   }
 
   @Perfis(
@@ -31,8 +39,11 @@ export class ClientesController {
     PerfilUsuario.MASTER,
   )
   @Get()
-  listar(@Query() consulta: PaginacaoConsultaDto) {
-    return this.clientesService.listar(consulta);
+  async listar(@Query() consulta: PaginacaoConsultaDto) {
+    return serializarListaDto(
+      ClienteResponseDto,
+      await this.clientesService.listar(consulta),
+    );
   }
 
   @Perfis(
@@ -41,8 +52,8 @@ export class ClientesController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.clientesService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    return serializarDto(ClienteResponseDto, await this.clientesService.buscarPorId(id));
   }
 
   @Perfis(
@@ -51,11 +62,14 @@ export class ClientesController {
     PerfilUsuario.MASTER,
   )
   @Patch(':id')
-  atualizar(
+  async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarClienteDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.clientesService.atualizar(id, dto, usuarioAtual.sub);
+    return serializarDto(
+      ClienteResponseDto,
+      await this.clientesService.atualizar(id, dto, usuarioAtual.sub),
+    );
   }
 }

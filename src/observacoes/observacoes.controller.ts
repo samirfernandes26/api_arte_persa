@@ -3,7 +3,9 @@ import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { serializarDto, serializarListaDto } from '../comum/utilitarios/serializacao.util';
 import { AdicionarObservacaoDto } from './dto/adicionar-observacao.dto';
+import { ObservacaoResponseDto } from './dto/observacao-response.dto';
 import { ObservacoesService } from './observacoes.service';
 
 @Controller('observacoes')
@@ -16,11 +18,14 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Post()
-  adicionar(
+  async adicionar(
     @Body() dto: AdicionarObservacaoDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.observacoesService.adicionar(dto, usuarioAtual);
+    return serializarDto(
+      ObservacaoResponseDto,
+      await this.observacoesService.adicionar(dto, usuarioAtual),
+    );
   }
 
   @Perfis(
@@ -29,8 +34,11 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('ordens-servico/:ordemServicoId')
-  listarPorOrdemServico(@Param('ordemServicoId') ordemServicoId: string) {
-    return this.observacoesService.listarPorOrdemServico(ordemServicoId);
+  async listarPorOrdemServico(@Param('ordemServicoId') ordemServicoId: string) {
+    return serializarListaDto(
+      ObservacaoResponseDto,
+      await this.observacoesService.listarPorOrdemServico(ordemServicoId),
+    );
   }
 
   @Perfis(
@@ -39,8 +47,11 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('itens/:itemId')
-  listarPorItem(@Param('itemId') itemId: string) {
-    return this.observacoesService.listarPorItem(itemId);
+  async listarPorItem(@Param('itemId') itemId: string) {
+    return serializarListaDto(
+      ObservacaoResponseDto,
+      await this.observacoesService.listarPorItem(itemId),
+    );
   }
 
   @Perfis(
@@ -49,8 +60,11 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('clientes/:clienteId')
-  listarPorCliente(@Param('clienteId') clienteId: string) {
-    return this.observacoesService.listarPorCliente(clienteId);
+  async listarPorCliente(@Param('clienteId') clienteId: string) {
+    return serializarListaDto(
+      ObservacaoResponseDto,
+      await this.observacoesService.listarPorCliente(clienteId),
+    );
   }
 
   @Perfis(
@@ -59,8 +73,11 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('faturas/:faturaId')
-  listarPorFatura(@Param('faturaId') faturaId: string) {
-    return this.observacoesService.listarPorFatura(faturaId);
+  async listarPorFatura(@Param('faturaId') faturaId: string) {
+    return serializarListaDto(
+      ObservacaoResponseDto,
+      await this.observacoesService.listarPorFatura(faturaId),
+    );
   }
 
   @Perfis(
@@ -69,7 +86,10 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.observacoesService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    return serializarDto(
+      ObservacaoResponseDto,
+      await this.observacoesService.buscarPorId(id),
+    );
   }
 }

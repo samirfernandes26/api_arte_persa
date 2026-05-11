@@ -31,4 +31,6 @@ import { S3Service } from './s3.service';
   ],
   exports: [S3Service],
 })
-export class S3Module {}
+export class ModuloS3 {}
+
+export { ModuloS3 as S3Module };

@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../s3/s3.service';
@@ -18,13 +19,27 @@ import {
 @Injectable()
 export class UploadsService {
   private readonly logger = new Logger(UploadsService.name);
+  private readonly limiteArquivoBytes: number;
+  private readonly tiposMimeImagemPermitidos: Set<string>;
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly s3Service: S3Service,
-  ) {}
+  ) {
+    this.limiteArquivoBytes =
+      this.configService.get<number>('LIMITE_MB_ARQUIVO_IMAGEM', 15) * 1024 * 1024;
+    this.tiposMimeImagemPermitidos = new Set(
+      this.configService
+        .get<string>('TIPOS_MIME_PERMITIDOS_IMAGEM', '')
+        .split(',')
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean),
+    );
+  }
 
   async gerarUrlPreAssinada(dto: GerarUrlPreAssinadaDto) {
+    this.validarMimeParaDestino(dto.tipo_destino, dto.tipo_mime);
     const chave = this.gerarChave(dto);
     const resultado = await this.s3Service.obterUrlPreAssinada({
       chave,
@@ -40,7 +55,7 @@ export class UploadsService {
     return {
       ...resultado,
       url_publica: this.s3Service.obterUrlObjeto(resultado.chave),
-      bucket: 'padrao',
+      bucket: this.s3Service.obterBucketPadrao(),
     };
   }
 
@@ -56,6 +71,16 @@ export class UploadsService {
     if (!ordem || !ordem.ativo || ordem.data_exclusao) {
       throw new NotFoundException('Ordem de servico nao encontrada.');
     }
+
+    this.validarMimeParaDestino(
+      TipoDestinoUpload.IMAGEM_ADICIONAL_ORDEM,
+      dto.tipo_mime,
+    );
+    this.validarTamanhoArquivo(dto.tamanho_bytes);
+    this.validarChaveEsperada(
+      dto.chave_s3,
+      `ordens/${dto.ordem_servico_id}/imagens-adicionais`,
+    );
 
     return this.prisma.imagemOrdemServico.create({
       data: {
@@ -85,6 +110,10 @@ export class UploadsService {
       throw new NotFoundException('Cliente nao encontrado.');
     }
 
+    this.validarMimeParaDestino(TipoDestinoUpload.ARQUIVO_CLIENTE, dto.tipo_mime);
+    this.validarTamanhoArquivo(dto.tamanho_bytes);
+    this.validarChaveEsperada(dto.chave_s3, `clientes/${dto.cliente_id}/arquivos`);
+
     return this.prisma.arquivoCliente.create({
       data: {
         cliente_id: dto.cliente_id,
@@ -111,6 +140,11 @@ export class UploadsService {
     if (!ordem || !ordem.ativo || ordem.data_exclusao) {
       throw new NotFoundException('Ordem de servico nao encontrada.');
     }
+
+    this.validarChaveEsperada(
+      dto.chave_s3,
+      `ordens/${dto.ordem_servico_id}/assinaturas`,
+    );
 
     return this.prisma.ordemServico.update({
       where: { id: dto.ordem_servico_id },
@@ -156,8 +190,18 @@ export class UploadsService {
         this.exigir(dto.item_ordem_servico_id, 'item_ordem_servico_id');
         return `ordens/${dto.ordem_servico_id}/itens/${dto.item_ordem_servico_id}`;
       case TipoDestinoUpload.IMAGEM_OBSERVACAO:
-        this.exigir(dto.ordem_servico_id, 'ordem_servico_id');
-        return `ordens/${dto.ordem_servico_id}/observacoes`;
+        if (dto.ordem_servico_id) {
+          return `ordens/${dto.ordem_servico_id}/observacoes`;
+        }
+        if (dto.cliente_id) {
+          return `clientes/${dto.cliente_id}/observacoes`;
+        }
+        if (dto.fatura_id) {
+          return `faturas/${dto.fatura_id}/observacoes`;
+        }
+        throw new BadRequestException(
+          'Informe ordem_servico_id, cliente_id ou fatura_id para imagem de observacao.',
+        );
       case TipoDestinoUpload.IMAGEM_ADICIONAL_ORDEM:
         this.exigir(dto.ordem_servico_id, 'ordem_servico_id');
         return `ordens/${dto.ordem_servico_id}/imagens-adicionais`;
@@ -191,6 +235,65 @@ export class UploadsService {
   private exigir(valor: string | undefined, campo: string): asserts valor is string {
     if (!valor) {
       throw new BadRequestException(`O campo ${campo} e obrigatorio para este upload.`);
+    }
+  }
+
+  private validarChaveEsperada(chave: string, prefixoEsperado: string): void {
+    const chaveNormalizada = chave.trim().replace(/^\/+/, '');
+    const prefixoNormalizado = prefixoEsperado.trim().replace(/^\/+/, '');
+
+    if (!chaveNormalizada.startsWith(`${prefixoNormalizado}/`)) {
+      throw new BadRequestException(
+        `A chave S3 informada nao pertence ao prefixo permitido: ${prefixoNormalizado}.`,
+      );
+    }
+  }
+
+  private validarMimeParaDestino(
+    tipoDestino: TipoDestinoUpload,
+    tipoMime: string,
+  ): void {
+    const mimeNormalizado = tipoMime.trim().toLowerCase();
+    const eMimeImagemPermitido = this.tiposMimeImagemPermitidos.has(mimeNormalizado);
+
+    switch (tipoDestino) {
+      case TipoDestinoUpload.FOTO_INICIAL_ITEM:
+      case TipoDestinoUpload.IMAGEM_OBSERVACAO:
+      case TipoDestinoUpload.IMAGEM_ADICIONAL_ORDEM:
+      case TipoDestinoUpload.ASSINATURA_CLIENTE:
+        if (!eMimeImagemPermitido) {
+          throw new BadRequestException(
+            `Tipo MIME nao permitido para imagem: ${mimeNormalizado}.`,
+          );
+        }
+        return;
+      case TipoDestinoUpload.PDF_ORDEM_SERVICO:
+      case TipoDestinoUpload.PDF_FATURA:
+        if (mimeNormalizado !== 'application/pdf') {
+          throw new BadRequestException(
+            `Tipo MIME nao permitido para PDF: ${mimeNormalizado}.`,
+          );
+        }
+        return;
+      case TipoDestinoUpload.ARQUIVO_CLIENTE:
+        if (!eMimeImagemPermitido && mimeNormalizado !== 'application/pdf') {
+          throw new BadRequestException(
+            `Tipo MIME nao permitido para arquivo de cliente: ${mimeNormalizado}.`,
+          );
+        }
+        return;
+      default:
+        throw new BadRequestException('Tipo de destino de upload nao suportado.');
+    }
+  }
+
+  private validarTamanhoArquivo(tamanhoBytes: number): void {
+    if (tamanhoBytes > this.limiteArquivoBytes) {
+      throw new BadRequestException(
+        `O arquivo excede o limite configurado de ${Math.round(
+          this.limiteArquivoBytes / (1024 * 1024),
+        )} MB.`,
+      );
     }
   }
 }

@@ -4,8 +4,16 @@ import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import {
+  serializarDto,
+  serializarListaDto,
+} from '../comum/utilitarios/serializacao.util';
 import { CriarUsuarioDto } from './dto/criar-usuario.dto';
 import { AtualizarUsuarioDto } from './dto/atualizar-usuario.dto';
+import {
+  UsuarioResponseDto,
+  UsuarioResumidoDto,
+} from './dto/usuario-response.dto';
 import { UsuariosService } from './usuarios.service';
 
 @Controller('usuarios')
@@ -14,38 +22,47 @@ export class UsuariosController {
 
   @Publico()
   @Post('primeiro-master')
-  criarPrimeiroMaster(@Body() dto: CriarUsuarioDto) {
-    return this.usuariosService.criarPrimeiroMaster(dto);
+  async criarPrimeiroMaster(@Body() dto: CriarUsuarioDto) {
+    return serializarDto(
+      UsuarioResponseDto,
+      await this.usuariosService.criarPrimeiroMaster(dto),
+    );
   }
 
   @Perfis(PerfilUsuario.MASTER)
   @Post()
-  criar(
+  async criar(
     @Body() dto: CriarUsuarioDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.usuariosService.criar(dto, usuarioAtual.sub);
+    return serializarDto(
+      UsuarioResponseDto,
+      await this.usuariosService.criar(dto, usuarioAtual.sub),
+    );
   }
 
   @Perfis(PerfilUsuario.MASTER, PerfilUsuario.SUPERVISOR)
   @Get()
-  listar() {
-    return this.usuariosService.listar();
+  async listar() {
+    return serializarListaDto(UsuarioResumidoDto, await this.usuariosService.listar());
   }
 
   @Perfis(PerfilUsuario.MASTER, PerfilUsuario.SUPERVISOR)
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.usuariosService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    return serializarDto(UsuarioResponseDto, await this.usuariosService.buscarPorId(id));
   }
 
   @Perfis(PerfilUsuario.MASTER)
   @Patch(':id')
-  atualizar(
+  async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarUsuarioDto,
     @UsuarioAtual() usuarioAtual: PayloadToken,
   ) {
-    return this.usuariosService.atualizar(id, dto, usuarioAtual.sub);
+    return serializarDto(
+      UsuarioResponseDto,
+      await this.usuariosService.atualizar(id, dto, usuarioAtual.sub),
+    );
   }
 }

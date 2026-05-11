@@ -58,6 +58,22 @@ describe('Integracao - Autenticacao', () => {
     expect(refresh.body.refresh_token).not.toBe(login.refresh_token);
   });
 
+  it('nao expone senha_hash na resposta de criacao do primeiro master', async () => {
+    const resposta = await request(app.getHttpServer())
+      .post('/api/usuarios/primeiro-master')
+      .send({
+        nome: 'Master Inicial',
+        email: 'master.inicial@empresa.com.br',
+        senha: 'SenhaSegura@123',
+        perfil: 'master',
+      })
+      .expect(201);
+
+    expect(resposta.body.id).toBeTruthy();
+    expect(resposta.body.email).toBe('master.inicial@empresa.com.br');
+    expect(resposta.body.senha_hash).toBeUndefined();
+  });
+
   it('retorna 401 ao acessar rota protegida sem token', async () => {
     await request(app.getHttpServer()).get('/api/autenticacao/eu').expect(401);
   });

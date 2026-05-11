@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  InternalServerErrorException,
   Injectable,
   Logger,
   NotFoundException,
@@ -18,6 +19,13 @@ import { ClientesService } from '../clientes/clientes.service';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
 import { StatusOrdemServico } from '../comum/enums/status-ordem-servico.enum';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { gerarCodigoExterno } from '../comum/utilitarios/codigo-externo.util';
+import {
+  arredondarMoeda,
+  dividirMoeda,
+  paraDecimal,
+  somarDecimais,
+} from '../comum/utilitarios/dinheiro.util';
 import { validarDescontoPorPerfil } from '../comum/utilitarios/desconto.util';
 import { validarTransicaoStatusOrdemServico } from '../comum/utilitarios/status-ordem-servico.util';
 import { FilasService } from '../filas/filas.service';
@@ -36,10 +44,10 @@ interface ServicoExecutadoMontado {
   nome_servico_snapshot: string;
   categoria_servico_snapshot?: string;
   unidade_cobranca_snapshot: UnidadeCobrancaServicoPrisma;
-  valor_unitario_snapshot: number;
-  quantidade: number;
-  valor_desconto: number;
-  valor_total: number;
+  valor_unitario_snapshot: Prisma.Decimal;
+  quantidade: Prisma.Decimal;
+  valor_desconto: Prisma.Decimal;
+  valor_total: Prisma.Decimal;
   observacoes?: string;
 }
 
@@ -57,12 +65,12 @@ interface ItemMontado {
   cuidados_especiais?: string;
   chave_foto_inicial?: string;
   url_foto_inicial?: string;
-  valor_unitario_base: number;
-  valor_unitario_desconto: number;
-  valor_unitario_final: number;
-  valor_total_bruto: number;
-  valor_total_desconto: number;
-  valor_total_final: number;
+  valor_unitario_base: Prisma.Decimal;
+  valor_unitario_desconto: Prisma.Decimal;
+  valor_unitario_final: Prisma.Decimal;
+  valor_total_bruto: Prisma.Decimal;
+  valor_total_desconto: Prisma.Decimal;
+  valor_total_final: Prisma.Decimal;
   servicos_executados: ServicoExecutadoMontado[];
 }
 
@@ -137,11 +145,7 @@ export class OrdensServicoService {
       ? await this.obterUsuarioAtivo(dto.aprovado_por_desconto_id)
       : null;
 
-    if (percentualDesconto > 0 && !dto.motivo_desconto) {
-      throw new BadRequestException(
-        'Informe o motivo do desconto quando houver percentual de desconto.',
-      );
-    }
+    this.validarMotivoDesconto(percentualDesconto, dto.motivo_desconto);
 
     validarDescontoPorPerfil({
       perfilSolicitante: usuarioAtual.perfil as PerfilUsuario,
@@ -153,54 +157,19 @@ export class OrdensServicoService {
     const totais = this.calcularTotais(
       itensMontados,
       percentualDesconto,
-      dto.valor_frete ?? 0,
+      paraDecimal(dto.valor_frete ?? 0),
     );
-    const codigo = await this.gerarCodigoOrdemServico();
     const responsavelId = dto.responsavel_id ?? usuarioAtual.sub;
     await this.obterUsuarioAtivo(responsavelId);
 
-    const ordemId = await this.prisma.$transaction(async (transacao) => {
-      const ordem = await transacao.ordemServico.create({
-        data: {
-          codigo,
-          cliente_id: dto.cliente_id,
-          criado_por_id: usuarioAtual.sub,
-          atualizado_por_id: usuarioAtual.sub,
-          responsavel_id: responsavelId,
-          aprovado_por_desconto_id: dto.aprovado_por_desconto_id,
-          canal_entrada: dto.canal_entrada,
-          snapshot_cliente: this.paraJson(cliente.cliente),
-          snapshot_endereco_coleta: this.paraJson(
-            dto.snapshot_endereco_coleta ?? cliente.endereco_padrao,
-          ),
-          snapshot_endereco_entrega: this.paraJson(
-            dto.snapshot_endereco_entrega ?? cliente.endereco_padrao,
-          ),
-          snapshot_politica_desconto: this.paraJson(limites),
-          percentual_desconto: percentualDesconto,
-          valor_desconto: totais.valor_desconto,
-          valor_frete: dto.valor_frete ?? 0,
-          valor_subtotal: totais.valor_subtotal,
-          valor_total: totais.valor_total,
-          motivo_desconto: dto.motivo_desconto,
-          observacoes_internas: dto.observacoes_internas,
-          observacoes_cliente: dto.observacoes_cliente,
-        },
-      });
-
-      await this.criarItensDaOrdem(transacao, ordem.id, itensMontados, usuarioAtual.sub);
-
-      await transacao.historicoStatusOrdemServico.create({
-        data: {
-          ordem_servico_id: ordem.id,
-          usuario_id: usuarioAtual.sub,
-          status_destino: StatusOrdemServicoPrisma.aberta,
-          motivo: 'Ordem criada.',
-          metadados: this.paraJson({ origem: 'criacao' }),
-        },
-      });
-
-      return ordem.id;
+    const ordemId = await this.criarOrdemComCodigoSeguro({
+      dto,
+      cliente,
+      itensMontados,
+      limites,
+      totais,
+      responsavelId,
+      usuarioAtual,
     });
 
     const ordemCompleta = await this.buscarPorId(ordemId);
@@ -266,7 +235,7 @@ export class OrdensServicoService {
     const cliente = await this.clientesService.obterSnapshotCliente(clienteId);
     const percentualDesconto =
       dto.percentual_desconto ?? Number(ordemAtual.percentual_desconto);
-    const valorFrete = dto.valor_frete ?? Number(ordemAtual.valor_frete);
+    const valorFrete = paraDecimal(dto.valor_frete ?? ordemAtual.valor_frete);
     const limites = this.obterLimitesDesconto();
     const aprovador = dto.aprovado_por_desconto_id
       ? await this.obterUsuarioAtivo(dto.aprovado_por_desconto_id)
@@ -280,6 +249,10 @@ export class OrdensServicoService {
       perfilAprovador: (aprovador?.perfil as PerfilUsuario | undefined) ?? null,
       limites,
     });
+    this.validarMotivoDesconto(
+      percentualDesconto,
+      dto.motivo_desconto ?? ordemAtual.motivo_desconto ?? undefined,
+    );
 
     const itensMontados = dto.itens
       ? await this.montarItens(dto.itens)
@@ -311,7 +284,7 @@ export class OrdensServicoService {
               cliente.endereco_padrao,
           ),
           snapshot_politica_desconto: this.paraJson(limites),
-          percentual_desconto: percentualDesconto,
+          percentual_desconto: paraDecimal(percentualDesconto),
           valor_desconto: totais.valor_desconto,
           valor_frete: valorFrete,
           valor_subtotal: totais.valor_subtotal,
@@ -473,18 +446,16 @@ export class OrdensServicoService {
       this.montarServicoExecutado(servico, mapaServicos),
     );
 
-    const valorTotalBruto = servicosExecutados.reduce(
-      (acumulador, servico) =>
-        acumulador + servico.valor_unitario_snapshot * servico.quantidade,
-      0,
+    const valorTotalBruto = somarDecimais(
+      servicosExecutados.map((servico) =>
+        servico.valor_unitario_snapshot.mul(servico.quantidade),
+      ),
     );
-    const valorTotalDesconto = servicosExecutados.reduce(
-      (acumulador, servico) => acumulador + servico.valor_desconto,
-      0,
+    const valorTotalDesconto = somarDecimais(
+      servicosExecutados.map((servico) => servico.valor_desconto),
     );
-    const valorTotalFinal = servicosExecutados.reduce(
-      (acumulador, servico) => acumulador + servico.valor_total,
-      0,
+    const valorTotalFinal = somarDecimais(
+      servicosExecutados.map((servico) => servico.valor_total),
     );
 
     return {
@@ -501,9 +472,9 @@ export class OrdensServicoService {
       cuidados_especiais: item.cuidados_especiais,
       chave_foto_inicial: item.chave_foto_inicial,
       url_foto_inicial: item.url_foto_inicial,
-      valor_unitario_base: valorTotalBruto / item.quantidade,
-      valor_unitario_desconto: valorTotalDesconto / item.quantidade,
-      valor_unitario_final: valorTotalFinal / item.quantidade,
+      valor_unitario_base: dividirMoeda(valorTotalBruto, item.quantidade),
+      valor_unitario_desconto: dividirMoeda(valorTotalDesconto, item.quantidade),
+      valor_unitario_final: dividirMoeda(valorTotalFinal, item.quantidade),
       valor_total_bruto: valorTotalBruto,
       valor_total_desconto: valorTotalDesconto,
       valor_total_final: valorTotalFinal,
@@ -537,11 +508,14 @@ export class OrdensServicoService {
       );
     }
 
-    const valorUnitario =
-      servico.valor_unitario_snapshot ?? Number(servicoCatalogo?.preco_base ?? 0);
-    const valorBruto = valorUnitario * servico.quantidade;
+    const valorUnitario = paraDecimal(
+      servico.valor_unitario_snapshot ?? servicoCatalogo?.preco_base ?? 0,
+    );
+    const quantidade = paraDecimal(servico.quantidade);
+    const valorBruto = arredondarMoeda(valorUnitario.mul(quantidade));
+    const valorDesconto = arredondarMoeda(servico.valor_desconto);
 
-    if (servico.valor_desconto > valorBruto) {
+    if (valorDesconto.greaterThan(valorBruto)) {
       throw new BadRequestException(
         `O desconto do servico ${nomeServico} nao pode ultrapassar o valor bruto.`,
       );
@@ -554,9 +528,9 @@ export class OrdensServicoService {
       unidade_cobranca_snapshot:
         unidadeCobranca as unknown as UnidadeCobrancaServicoPrisma,
       valor_unitario_snapshot: valorUnitario,
-      quantidade: servico.quantidade,
-      valor_desconto: servico.valor_desconto,
-      valor_total: valorBruto - servico.valor_desconto,
+      quantidade,
+      valor_desconto: valorDesconto,
+      valor_total: arredondarMoeda(valorBruto.minus(valorDesconto)),
       observacoes: servico.observacoes,
     };
   }
@@ -578,22 +552,22 @@ export class OrdensServicoService {
       cuidados_especiais: item.cuidados_especiais ?? undefined,
       chave_foto_inicial: item.chave_foto_inicial ?? undefined,
       url_foto_inicial: item.url_foto_inicial ?? undefined,
-      valor_unitario_base: Number(item.valor_unitario_base),
-      valor_unitario_desconto: Number(item.valor_unitario_desconto),
-      valor_unitario_final: Number(item.valor_unitario_final),
-      valor_total_bruto: Number(item.valor_total_bruto),
-      valor_total_desconto: Number(item.valor_total_desconto),
-      valor_total_final: Number(item.valor_total_final),
+      valor_unitario_base: paraDecimal(item.valor_unitario_base),
+      valor_unitario_desconto: paraDecimal(item.valor_unitario_desconto),
+      valor_unitario_final: paraDecimal(item.valor_unitario_final),
+      valor_total_bruto: paraDecimal(item.valor_total_bruto),
+      valor_total_desconto: paraDecimal(item.valor_total_desconto),
+      valor_total_final: paraDecimal(item.valor_total_final),
       servicos_executados: item.servicos_executados.map((servico) => ({
         servico_catalogo_id: servico.servico_catalogo_id ?? undefined,
         nome_servico_snapshot: servico.nome_servico_snapshot,
         categoria_servico_snapshot:
           servico.categoria_servico_snapshot ?? undefined,
         unidade_cobranca_snapshot: servico.unidade_cobranca_snapshot,
-        valor_unitario_snapshot: Number(servico.valor_unitario_snapshot),
-        quantidade: Number(servico.quantidade),
-        valor_desconto: Number(servico.valor_desconto),
-        valor_total: Number(servico.valor_total),
+        valor_unitario_snapshot: paraDecimal(servico.valor_unitario_snapshot),
+        quantidade: paraDecimal(servico.quantidade),
+        valor_desconto: paraDecimal(servico.valor_desconto),
+        valor_total: paraDecimal(servico.valor_total),
         observacoes: servico.observacoes ?? undefined,
       })),
     }));
@@ -602,23 +576,26 @@ export class OrdensServicoService {
   private calcularTotais(
     itens: ItemMontado[],
     percentualDesconto: number,
-    valorFrete: number,
+    valorFrete: Prisma.Decimal,
   ) {
-    const valorSubtotal = itens.reduce(
-      (acumulador, item) => acumulador + item.valor_total_bruto,
-      0,
+    const valorSubtotal = somarDecimais(itens.map((item) => item.valor_total_bruto));
+    const valorDescontoItens = somarDecimais(
+      itens.map((item) => item.valor_total_desconto),
     );
-    const valorDescontoItens = itens.reduce(
-      (acumulador, item) => acumulador + item.valor_total_desconto,
-      0,
+    const baseDescontoPercentual = valorSubtotal.minus(valorDescontoItens);
+    const percentualDecimal = paraDecimal(percentualDesconto).div(100);
+    const valorDescontoPercentual = arredondarMoeda(
+      baseDescontoPercentual.mul(percentualDecimal),
     );
-    const baseDescontoPercentual = valorSubtotal - valorDescontoItens;
-    const valorDescontoPercentual =
-      (baseDescontoPercentual * percentualDesconto) / 100;
-    const valorDesconto = valorDescontoItens + valorDescontoPercentual;
-    const valorTotal = valorSubtotal - valorDesconto + valorFrete;
+    const valorDesconto = somarDecimais([
+      valorDescontoItens,
+      valorDescontoPercentual,
+    ]);
+    const valorTotal = arredondarMoeda(
+      valorSubtotal.minus(valorDesconto).plus(valorFrete),
+    );
 
-    if (valorTotal < 0) {
+    if (valorTotal.isNegative()) {
       throw new ForbiddenException(
         'A composicao financeira da ordem resultou em valor total negativo.',
       );
@@ -661,19 +638,122 @@ export class OrdensServicoService {
     return usuario;
   }
 
-  private async gerarCodigoOrdemServico() {
-    const agora = new Date();
-    const dataCodigo = agora.toISOString().slice(0, 10).replace(/-/g, '');
-    const inicioDia = new Date(agora);
-    inicioDia.setHours(0, 0, 0, 0);
+  private validarMotivoDesconto(
+    percentualDesconto: number,
+    motivoDesconto?: string,
+  ): void {
+    if (percentualDesconto > 0 && !motivoDesconto?.trim()) {
+      throw new BadRequestException(
+        'Informe o motivo do desconto quando houver percentual de desconto.',
+      );
+    }
+  }
 
-    const quantidadeHoje = await this.prisma.ordemServico.count({
-      where: {
-        data_criacao: { gte: inicioDia },
-      },
-    });
+  private async criarOrdemComCodigoSeguro(entrada: {
+    dto: CriarOrdemServicoDto;
+    cliente: Awaited<ReturnType<ClientesService['obterSnapshotCliente']>>;
+    itensMontados: ItemMontado[];
+    limites: Record<PerfilUsuario, number>;
+    totais: {
+      valor_subtotal: Prisma.Decimal;
+      valor_desconto: Prisma.Decimal;
+      valor_total: Prisma.Decimal;
+    };
+    responsavelId: string;
+    usuarioAtual: PayloadToken;
+  }): Promise<string> {
+    for (let tentativa = 1; tentativa <= 5; tentativa += 1) {
+      const codigo = this.gerarCodigoOrdemServico();
 
-    return `OS-${dataCodigo}-${String(quantidadeHoje + 1).padStart(4, '0')}`;
+      try {
+        return await this.prisma.$transaction(async (transacao) => {
+          const ordem = await transacao.ordemServico.create({
+            data: {
+              codigo,
+              cliente_id: entrada.dto.cliente_id,
+              criado_por_id: entrada.usuarioAtual.sub,
+              atualizado_por_id: entrada.usuarioAtual.sub,
+              responsavel_id: entrada.responsavelId,
+              aprovado_por_desconto_id: entrada.dto.aprovado_por_desconto_id,
+              canal_entrada: entrada.dto.canal_entrada,
+              snapshot_cliente: this.paraJson(entrada.cliente.cliente),
+              snapshot_endereco_coleta: this.paraJson(
+                entrada.dto.snapshot_endereco_coleta ??
+                  entrada.cliente.endereco_padrao,
+              ),
+              snapshot_endereco_entrega: this.paraJson(
+                entrada.dto.snapshot_endereco_entrega ??
+                  entrada.cliente.endereco_padrao,
+              ),
+              snapshot_politica_desconto: this.paraJson(entrada.limites),
+              percentual_desconto: paraDecimal(
+                entrada.dto.percentual_desconto ?? 0,
+              ),
+              valor_desconto: entrada.totais.valor_desconto,
+              valor_frete: paraDecimal(entrada.dto.valor_frete ?? 0),
+              valor_subtotal: entrada.totais.valor_subtotal,
+              valor_total: entrada.totais.valor_total,
+              motivo_desconto: entrada.dto.motivo_desconto,
+              observacoes_internas: entrada.dto.observacoes_internas,
+              observacoes_cliente: entrada.dto.observacoes_cliente,
+            },
+          });
+
+          await this.criarItensDaOrdem(
+            transacao,
+            ordem.id,
+            entrada.itensMontados,
+            entrada.usuarioAtual.sub,
+          );
+
+          await transacao.historicoStatusOrdemServico.create({
+            data: {
+              ordem_servico_id: ordem.id,
+              usuario_id: entrada.usuarioAtual.sub,
+              status_destino: StatusOrdemServicoPrisma.aberta,
+              motivo: 'Ordem criada.',
+              metadados: this.paraJson({ origem: 'criacao' }),
+            },
+          });
+
+          return ordem.id;
+        });
+      } catch (erro) {
+        if (this.ehColisaoCampoUnico(erro, 'codigo')) {
+          this.logger.warn(
+            `Colisao ao gerar codigo da ordem de servico na tentativa ${tentativa}.`,
+          );
+          continue;
+        }
+
+        throw erro;
+      }
+    }
+
+    throw new InternalServerErrorException(
+      'Nao foi possivel gerar um codigo unico para a ordem de servico.',
+    );
+  }
+
+  private gerarCodigoOrdemServico() {
+    return gerarCodigoExterno('OS');
+  }
+
+  private ehColisaoCampoUnico(erro: unknown, campo: string): boolean {
+    if (!(erro instanceof Prisma.PrismaClientKnownRequestError)) {
+      return false;
+    }
+
+    if (erro.code !== 'P2002') {
+      return false;
+    }
+
+    const alvo = erro.meta?.target;
+    if (Array.isArray(alvo)) {
+      return alvo.includes(campo);
+    }
+
+    return typeof alvo === 'string' && alvo.includes(campo);
   }
 
   private obterMarcadoresStatus(
@@ -755,13 +835,13 @@ export class OrdensServicoService {
       status: ordem.status,
       chave_arquivo: `ordens/${ordem.id}/documentos/ordem-servico-${ordem.codigo}.pdf`,
       observacoes: ordem.observacoes_cliente ?? ordem.observacoes_internas ?? undefined,
-      valor_subtotal: Number(ordem.valor_subtotal).toFixed(2),
-      valor_desconto: Number(ordem.valor_desconto).toFixed(2),
-      valor_total: Number(ordem.valor_total).toFixed(2),
+      valor_subtotal: paraDecimal(ordem.valor_subtotal).toFixed(2),
+      valor_desconto: paraDecimal(ordem.valor_desconto).toFixed(2),
+      valor_total: paraDecimal(ordem.valor_total).toFixed(2),
       itens: ordem.itens.map((item) => ({
         descricao: item.descricao,
         quantidade: item.quantidade,
-        valor_total: Number(item.valor_total_final).toFixed(2),
+        valor_total: paraDecimal(item.valor_total_final).toFixed(2),
       })),
     });
 
