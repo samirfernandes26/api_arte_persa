@@ -1,0 +1,84 @@
+name: Prisma Migrate
+
+on:
+  push:
+    paths:
+      - prisma/schema.prisma
+      - prisma/migrations/**
+      - prisma.config.ts
+  pull_request:
+    paths:
+      - prisma/schema.prisma
+      - prisma/migrations/**
+      - prisma.config.ts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prisma-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  validar-prisma:
+    name: Validar Schema e Migracoes do Prisma
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_prisma_123
+          MYSQL_DATABASE: ordens_servico_validacao
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot_prisma_123 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+          --health-start-period=20s
+
+    env:
+      URL_BANCO_DADOS: mysql://root:root_prisma_123@127.0.0.1:${{ job.services.mysql.ports[3306] }}/ordens_servico_validacao
+      URL_BANCO_DADOS_SOMBRA: mysql://root:root_prisma_123@127.0.0.1:${{ job.services.mysql.ports[3306] }}/ordens_servico_validacao_sombra
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Validar schema Prisma
+        run: npx prisma validate
+
+      - name: Gerar Prisma Client
+        run: npm run prisma:generate
+
+      # Este passo valida se o schema atual e aplicavel em um MySQL limpo.
+      - name: Validar aplicacao do schema
+        run: npx prisma db push --accept-data-loss --skip-generate
+
+      # Quando houver migracoes versionadas, valida se elas estao coerentes com o schema.
+      - name: Validar historico de migracoes
+        shell: bash
+        run: |
+          if [ -d prisma/migrations ] && find prisma/migrations -mindepth 1 -maxdepth 1 -type d | grep -q .; then
+            npx prisma migrate diff \
+              --from-migrations prisma/migrations \
+              --to-schema prisma/schema.prisma \
+              --shadow-database-url "$URL_BANCO_DADOS_SOMBRA" \
+              --exit-code
+          else
+            echo "Nenhuma migration versionada encontrada. Validacao de schema concluida apenas com prisma validate, generate e db push."
+          fi

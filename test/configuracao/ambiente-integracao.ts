@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 export interface EstadoInfraestruturaIntegracao {
+  modo: 'testcontainers' | 'servicos_externos';
   mysql: {
     id: string;
     host: string;

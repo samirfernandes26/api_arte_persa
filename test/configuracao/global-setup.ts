@@ -10,6 +10,30 @@ import {
 } from './ambiente-integracao';
 
 export default async function configurarInfraestruturaGlobal() {
+  if (process.env.INTEGRACAO_USAR_SERVICOS_EXTERNOS === 'true') {
+    const estado = obterEstadoServicosExternos();
+
+    mkdirSync(dirname(caminhoEstadoInfraestrutura), { recursive: true });
+    writeFileSync(
+      caminhoEstadoInfraestrutura,
+      JSON.stringify(estado, null, 2),
+      'utf-8',
+    );
+
+    await aguardarMysqlDisponivel(estado);
+
+    execSync('npx prisma db push --accept-data-loss', {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        ...montarVariaveisAmbienteIntegracao(estado),
+      },
+    });
+
+    return;
+  }
+
   process.env.TESTCONTAINERS_RYUK_DISABLED = 'true';
   process.env.TESTCONTAINERS_CHECKS_DISABLE = 'true';
 
@@ -36,6 +60,7 @@ export default async function configurarInfraestruturaGlobal() {
     .start();
 
   const estado: EstadoInfraestruturaIntegracao = {
+    modo: 'testcontainers',
     mysql: {
       id: mysql.getId(),
       host: mysql.getHost(),
@@ -69,6 +94,29 @@ export default async function configurarInfraestruturaGlobal() {
       ...montarVariaveisAmbienteIntegracao(estado),
     },
   });
+}
+
+function obterEstadoServicosExternos(): EstadoInfraestruturaIntegracao {
+  return {
+    modo: 'servicos_externos',
+    mysql: {
+      id: 'externo:mysql',
+      host: process.env.INTEGRACAO_MYSQL_HOST || '127.0.0.1',
+      porta: Number(process.env.INTEGRACAO_MYSQL_PORTA || 3306),
+      usuario: process.env.INTEGRACAO_MYSQL_USUARIO || 'teste',
+      senha: process.env.INTEGRACAO_MYSQL_SENHA || 'teste_123',
+      banco: process.env.INTEGRACAO_MYSQL_BANCO || 'ordens_servico_teste',
+      senhaRoot:
+        process.env.INTEGRACAO_MYSQL_SENHA_ROOT ||
+        process.env.INTEGRACAO_MYSQL_SENHA ||
+        'root_teste_123',
+    },
+    redis: {
+      id: 'externo:redis',
+      host: process.env.INTEGRACAO_REDIS_HOST || '127.0.0.1',
+      porta: Number(process.env.INTEGRACAO_REDIS_PORTA || 6379),
+    },
+  };
 }
 
 async function aguardarMysqlDisponivel(

@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  lint:
+    name: Lint e Analise Estatica
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npm run prisma:generate
+
+      - name: Executar lint
+        run: npm run lint
+
+  build:
+    name: Build da Aplicacao
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs:
+      - lint
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npm run prisma:generate
+
+      - name: Compilar aplicacao
+        run: npm run build
+
+  testes-unitarios:
+    name: Testes Unitarios
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs:
+      - lint
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npm run prisma:generate
+
+      - name: Executar testes unitarios
+        run: npm run test:unit
+
+  testes-integracao:
+    name: Testes de Integracao
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs:
+      - build
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_teste_123
+          MYSQL_DATABASE: ordens_servico_teste
+          MYSQL_USER: teste
+          MYSQL_PASSWORD: teste_123
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot_teste_123 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+          --health-start-period=20s
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379/tcp
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      INTEGRACAO_USAR_SERVICOS_EXTERNOS: 'true'
+      INTEGRACAO_MYSQL_HOST: 127.0.0.1
+      INTEGRACAO_MYSQL_PORTA: ${{ job.services.mysql.ports[3306] }}
+      INTEGRACAO_MYSQL_USUARIO: teste
+      INTEGRACAO_MYSQL_SENHA: teste_123
+      INTEGRACAO_MYSQL_SENHA_ROOT: root_teste_123
+      INTEGRACAO_MYSQL_BANCO: ordens_servico_teste
+      INTEGRACAO_REDIS_HOST: 127.0.0.1
+      INTEGRACAO_REDIS_PORTA: ${{ job.services.redis.ports[6379] }}
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npm run prisma:generate
+
+      # A propria suite de integracao faz o db push usando os servicos externos.
+      - name: Executar testes de integracao e e2e
+        run: npm run test:integration

@@ -17,9 +17,11 @@ export default async function encerrarInfraestruturaGlobal() {
   const estado = lerEstadoInfraestrutura();
   await esperar(1000);
 
-  execSync(`docker rm -f ${estado.mysql.id} ${estado.redis.id}`, {
-    stdio: 'ignore',
-  });
+  if (estado.modo === 'testcontainers') {
+    execSync(`docker rm -f ${estado.mysql.id} ${estado.redis.id}`, {
+      stdio: 'ignore',
+    });
+  }
 
   rmSync(caminhoEstadoInfraestrutura, { force: true });
 }
