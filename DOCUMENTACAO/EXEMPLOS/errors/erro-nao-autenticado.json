@@ -1,0 +1,5 @@
+{
+  "message": "Token de acesso invalido ou expirado.",
+  "error": "Unauthorized",
+  "statusCode": 401
+}

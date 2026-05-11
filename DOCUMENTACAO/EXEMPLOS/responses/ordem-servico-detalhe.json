@@ -1,0 +1,187 @@
+{
+  "id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+  "codigo": "OS-20260511-0001",
+  "cliente_id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+  "criado_por_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "atualizado_por_id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
+  "responsavel_id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
+  "aprovado_por_desconto_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "status": "aberta",
+  "canal_entrada": "whatsapp",
+  "agendada_coleta_em": null,
+  "agendada_entrega_em": null,
+  "iniciada_em": null,
+  "finalizada_em": null,
+  "cancelada_em": null,
+  "snapshot_endereco_coleta": {
+    "logradouro": "Avenida Paulista",
+    "numero": "1578",
+    "cidade": "Sao Paulo",
+    "estado": "SP",
+    "cep": "01310-100"
+  },
+  "snapshot_endereco_entrega": {
+    "logradouro": "Avenida Paulista",
+    "numero": "1578",
+    "cidade": "Sao Paulo",
+    "estado": "SP",
+    "cep": "01310-100"
+  },
+  "snapshot_cliente": {
+    "id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+    "tipo_pessoa": "pessoa_fisica",
+    "documento": "12345678900",
+    "nome_razao_social": "Helena Duarte",
+    "nome_fantasia_apelido": "Dona Helena",
+    "email_principal": "helena.duarte@example.com",
+    "telefone_principal": "11998765432"
+  },
+  "snapshot_politica_desconto": {
+    "funcionario": 10,
+    "supervisor": 20,
+    "master": 100
+  },
+  "percentual_desconto": "12",
+  "valor_desconto": "309.60",
+  "valor_frete": "45",
+  "valor_subtotal": "2030",
+  "valor_total": "1765.40",
+  "motivo_desconto": "Cliente recorrente com contrato anual de manutencao.",
+  "observacoes_internas": "Tapete principal precisa de atencao especial nas franjas.",
+  "observacoes_cliente": "Solicita entrega apos as 18h.",
+  "chave_assinatura_cliente": null,
+  "url_assinatura_cliente": null,
+  "assinada_em": null,
+  "chave_pdf": "ordens/0b395729-f3e7-455c-bf1d-0d4338d6c104/documentos/ordem-servico-OS-20260511-0001.pdf",
+  "url_pdf": "https://empresa-tapetes-persas.s3.us-east-1.amazonaws.com/ordens/0b395729-f3e7-455c-bf1d-0d4338d6c104/documentos/ordem-servico-OS-20260511-0001.pdf",
+  "ativo": true,
+  "data_criacao": "2026-05-11T18:25:00.000Z",
+  "data_atualizacao": "2026-05-11T18:25:00.000Z",
+  "data_exclusao": null,
+  "cliente": {
+    "id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+    "nome_razao_social": "Helena Duarte",
+    "email_principal": "helena.duarte@example.com"
+  },
+  "criado_por": {
+    "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+    "nome": "Samir Fernandes",
+    "email": "master@artepersa.com.br",
+    "perfil": "master"
+  },
+  "atualizado_por": {
+    "id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
+    "nome": "Marina Operacoes",
+    "email": "marina@artepersa.com.br",
+    "perfil": "funcionario"
+  },
+  "responsavel": {
+    "id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
+    "nome": "Marina Operacoes",
+    "email": "marina@artepersa.com.br",
+    "perfil": "funcionario"
+  },
+  "aprovado_por_desconto": {
+    "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+    "nome": "Samir Fernandes",
+    "email": "master@artepersa.com.br",
+    "perfil": "master"
+  },
+  "itens": [
+    {
+      "id": "8aa7705b-3051-4f47-9e6f-d489db518d65",
+      "ordem_servico_id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+      "descricao": "Tapete persa sala principal",
+      "categoria": "tapete_persa",
+      "material": "la",
+      "quantidade": 1,
+      "largura_cm": "250",
+      "altura_cm": "350",
+      "profundidade_cm": null,
+      "area_m2": null,
+      "valor_declarado": "18000",
+      "estado_atual": "Leves manchas de vinho nas extremidades.",
+      "cuidados_especiais": "Nao dobrar durante transporte.",
+      "valor_unitario_base": "1580",
+      "valor_unitario_desconto": "120",
+      "valor_unitario_final": "1460",
+      "valor_total_bruto": "1580",
+      "valor_total_desconto": "120",
+      "valor_total_final": "1460",
+      "chave_foto_inicial": "ordens/ordem-temp/itens/item-temp/foto-inicial-tapete.jpg",
+      "url_foto_inicial": "https://empresa-tapetes-persas.s3.us-east-1.amazonaws.com/ordens/ordem-temp/itens/item-temp/foto-inicial-tapete.jpg",
+      "servicos_executados": [
+        {
+          "id": "e85fcdc8-b9d1-4c4d-b53f-afd2774afadf",
+          "servico_catalogo_id": "2db6c5ff-1c72-4aa3-a1e2-cd685ece2fd1",
+          "nome_servico_snapshot": "Lavagem especializada de tapete persa",
+          "categoria_servico_snapshot": "higienizacao",
+          "unidade_cobranca_snapshot": "unidade",
+          "valor_unitario_snapshot": "1200",
+          "quantidade": "1",
+          "valor_desconto": "120",
+          "valor_total": "1080",
+          "observacoes": "Aplicar protecao antiacaro ao final."
+        },
+        {
+          "id": "2c21db47-5d33-4d31-97d2-f80f9abce298",
+          "servico_catalogo_id": null,
+          "nome_servico_snapshot": "Reparo de franjas artesanais",
+          "categoria_servico_snapshot": "restauro",
+          "unidade_cobranca_snapshot": "unidade",
+          "valor_unitario_snapshot": "380",
+          "quantidade": "1",
+          "valor_desconto": "0",
+          "valor_total": "380",
+          "observacoes": "Conferir padrao original das pontas."
+        }
+      ],
+      "observacoes": []
+    }
+  ],
+  "historico_status": [
+    {
+      "id": "85ad3d0f-b6ff-4b1e-a7ae-ae89cb4ad37d",
+      "ordem_servico_id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+      "usuario_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+      "status_origem": null,
+      "status_destino": "aberta",
+      "motivo": "Ordem criada.",
+      "metadados": {
+        "origem": "criacao"
+      },
+      "ativo": true,
+      "data_criacao": "2026-05-11T18:25:00.000Z",
+      "data_atualizacao": "2026-05-11T18:25:00.000Z",
+      "data_exclusao": null,
+      "usuario": {
+        "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+        "nome": "Samir Fernandes",
+        "email": "master@artepersa.com.br",
+        "perfil": "master"
+      }
+    }
+  ],
+  "observacoes": [
+    {
+      "id": "10cb9d79-12bb-4707-a94d-6dbb5e4e1933",
+      "tipo_alvo": "ordem_servico",
+      "ordem_servico_id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+      "item_ordem_servico_id": null,
+      "cliente_id": null,
+      "fatura_id": null,
+      "criado_por_id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
+      "atualizado_por_id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
+      "visibilidade": "interna",
+      "titulo": "Analise tecnica inicial",
+      "conteudo": "Foi identificado desgaste nas franjas do lado direito e necessidade de reforco de costura antes da lavagem profunda.",
+      "ativo": true,
+      "data_criacao": "2026-05-11T18:30:00.000Z",
+      "data_atualizacao": "2026-05-11T18:30:00.000Z",
+      "data_exclusao": null,
+      "imagens": []
+    }
+  ],
+  "imagens": [],
+  "fatura": null
+}

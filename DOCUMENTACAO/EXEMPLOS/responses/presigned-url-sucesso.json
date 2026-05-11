@@ -1,0 +1,11 @@
+{
+  "chave": "ordens/0b395729-f3e7-455c-bf1d-0d4338d6c104/imagens-adicionais/1715450488211-2f6cc034-153f-4baf-b74c-1822d8418ef2-detalhe-franjas-sala-principal.jpg",
+  "url": "https://empresa-tapetes-persas.s3.us-east-1.amazonaws.com/ordens/0b395729-f3e7-455c-bf1d-0d4338d6c104/imagens-adicionais/1715450488211-2f6cc034-153f-4baf-b74c-1822d8418ef2-detalhe-franjas-sala-principal.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+  "metodo": "PUT",
+  "expira_em": 900,
+  "cabecalhos": {
+    "Content-Type": "image/jpeg"
+  },
+  "url_publica": "https://empresa-tapetes-persas.s3.us-east-1.amazonaws.com/ordens/0b395729-f3e7-455c-bf1d-0d4338d6c104/imagens-adicionais/1715450488211-2f6cc034-153f-4baf-b74c-1822d8418ef2-detalhe-franjas-sala-principal.jpg",
+  "bucket": "padrao"
+}

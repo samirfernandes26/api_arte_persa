@@ -1,0 +1,7 @@
+{
+  "message": [
+    "O estado deve ter 2 caracteres."
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}

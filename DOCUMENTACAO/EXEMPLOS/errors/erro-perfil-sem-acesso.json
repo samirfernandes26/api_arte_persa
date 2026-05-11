@@ -1,0 +1,5 @@
+{
+  "message": "Seu perfil nao possui acesso a este recurso.",
+  "error": "Forbidden",
+  "statusCode": 403
+}

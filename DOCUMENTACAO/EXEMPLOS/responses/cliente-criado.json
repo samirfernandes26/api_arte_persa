@@ -1,0 +1,58 @@
+{
+  "id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+  "tipo_pessoa": "pessoa_fisica",
+  "documento": "12345678900",
+  "nome_razao_social": "Helena Duarte",
+  "nome_fantasia_apelido": "Dona Helena",
+  "email_principal": "helena.duarte@example.com",
+  "telefone_principal": "11998765432",
+  "observacoes_internas": "Cliente prefere contato por WhatsApp no periodo da tarde.",
+  "criado_por_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "atualizado_por_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "ativo": true,
+  "data_criacao": "2026-05-11T18:15:00.000Z",
+  "data_atualizacao": "2026-05-11T18:15:00.000Z",
+  "data_exclusao": null,
+  "contatos": [
+    {
+      "id": "d65c3510-5e4d-4c7f-9151-2b89bcc28ad0",
+      "cliente_id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+      "nome": "Helena Duarte",
+      "setor": null,
+      "cargo": null,
+      "tipo_contato": "whatsapp",
+      "valor": "11998765432",
+      "principal": true,
+      "observacoes": null,
+      "ativo": true,
+      "data_criacao": "2026-05-11T18:15:00.000Z",
+      "data_atualizacao": "2026-05-11T18:15:00.000Z",
+      "data_exclusao": null
+    }
+  ],
+  "enderecos": [
+    {
+      "id": "26436f68-ef43-4ef2-b1ff-fd6a62ea5bc9",
+      "cliente_id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+      "tipo_endereco": "coleta",
+      "rotulo": "Apartamento principal",
+      "destinatario": "Helena Duarte",
+      "cep": "01310-100",
+      "logradouro": "Avenida Paulista",
+      "numero": "1578",
+      "complemento": "Apto 92",
+      "bairro": "Bela Vista",
+      "cidade": "Sao Paulo",
+      "estado": "SP",
+      "pais": "BR",
+      "referencia": null,
+      "principal": true,
+      "latitude": null,
+      "longitude": null,
+      "ativo": true,
+      "data_criacao": "2026-05-11T18:15:00.000Z",
+      "data_atualizacao": "2026-05-11T18:15:00.000Z",
+      "data_exclusao": null
+    }
+  ]
+}

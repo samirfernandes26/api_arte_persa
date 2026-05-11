@@ -1,0 +1,79 @@
+{
+  "cliente_id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+  "canal_entrada": "whatsapp",
+  "responsavel_id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
+  "aprovado_por_desconto_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "percentual_desconto": 12,
+  "valor_frete": 45,
+  "motivo_desconto": "Cliente recorrente com contrato anual de manutencao.",
+  "observacoes_internas": "Tapete principal precisa de atencao especial nas franjas.",
+  "observacoes_cliente": "Solicita entrega apos as 18h.",
+  "snapshot_endereco_coleta": {
+    "logradouro": "Avenida Paulista",
+    "numero": "1578",
+    "complemento": "Apto 92",
+    "bairro": "Bela Vista",
+    "cidade": "Sao Paulo",
+    "estado": "SP",
+    "cep": "01310-100"
+  },
+  "snapshot_endereco_entrega": {
+    "logradouro": "Avenida Paulista",
+    "numero": "1578",
+    "complemento": "Apto 92",
+    "bairro": "Bela Vista",
+    "cidade": "Sao Paulo",
+    "estado": "SP",
+    "cep": "01310-100"
+  },
+  "itens": [
+    {
+      "descricao": "Tapete persa sala principal",
+      "categoria": "tapete_persa",
+      "material": "la",
+      "quantidade": 1,
+      "largura_cm": 250,
+      "altura_cm": 350,
+      "valor_declarado": 18000,
+      "estado_atual": "Leves manchas de vinho nas extremidades.",
+      "cuidados_especiais": "Nao dobrar durante transporte.",
+      "chave_foto_inicial": "ordens/ordem-temp/itens/item-temp/foto-inicial-tapete.jpg",
+      "url_foto_inicial": "https://empresa-tapetes-persas.s3.us-east-1.amazonaws.com/ordens/ordem-temp/itens/item-temp/foto-inicial-tapete.jpg",
+      "servicos_executados": [
+        {
+          "servico_catalogo_id": "2db6c5ff-1c72-4aa3-a1e2-cd685ece2fd1",
+          "valor_unitario_snapshot": 1200,
+          "quantidade": 1,
+          "valor_desconto": 120,
+          "observacoes": "Aplicar protecao antiacaro ao final."
+        },
+        {
+          "nome_servico_snapshot": "Reparo de franjas artesanais",
+          "categoria_servico_snapshot": "restauro",
+          "unidade_cobranca_snapshot": "unidade",
+          "valor_unitario_snapshot": 380,
+          "quantidade": 1,
+          "valor_desconto": 0,
+          "observacoes": "Conferir padrao original das pontas."
+        }
+      ]
+    },
+    {
+      "descricao": "Poltrona em veludo azul",
+      "categoria": "poltrona",
+      "material": "veludo",
+      "quantidade": 1,
+      "valor_declarado": 4200,
+      "estado_atual": "Poeira acumulada e leve desgaste no encosto.",
+      "servicos_executados": [
+        {
+          "servico_catalogo_id": "f459f7d1-1f37-4e4e-b0c4-56d7a3a65bc4",
+          "valor_unitario_snapshot": 450,
+          "quantidade": 1,
+          "valor_desconto": 0,
+          "observacoes": "Secagem controlada para evitar marcas."
+        }
+      ]
+    }
+  ]
+}

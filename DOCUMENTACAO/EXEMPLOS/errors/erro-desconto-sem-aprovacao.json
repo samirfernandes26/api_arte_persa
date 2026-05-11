@@ -1,0 +1,5 @@
+{
+  "message": "O perfil funcionario nao pode aplicar 15% sem aprovacao.",
+  "error": "Forbidden",
+  "statusCode": 403
+}

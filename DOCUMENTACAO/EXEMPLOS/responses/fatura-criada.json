@@ -1,0 +1,45 @@
+{
+  "id": "f48e51c0-df37-4cab-b0c9-80851d765f77",
+  "ordem_servico_id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+  "numero": "FAT-20260511-0001",
+  "criado_por_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "atualizado_por_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "status": "rascunho",
+  "emitida_em": null,
+  "vencimento_em": "2026-05-20T00:00:00.000Z",
+  "paga_em": null,
+  "metodo_pagamento": "pix",
+  "valor_subtotal": "2030",
+  "valor_desconto": "309.60",
+  "valor_impostos": "0",
+  "valor_total": "1720.40",
+  "observacoes": "Pagamento previsto em parcela unica.",
+  "chave_pdf": null,
+  "url_pdf": null,
+  "ativo": true,
+  "data_criacao": "2026-05-11T18:40:00.000Z",
+  "data_atualizacao": "2026-05-11T18:40:00.000Z",
+  "data_exclusao": null,
+  "ordem_servico": {
+    "id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+    "codigo": "OS-20260511-0001",
+    "cliente": {
+      "id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+      "nome_razao_social": "Helena Duarte",
+      "email_principal": "helena.duarte@example.com"
+    }
+  },
+  "criado_por": {
+    "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+    "nome": "Samir Fernandes",
+    "email": "master@artepersa.com.br",
+    "perfil": "master"
+  },
+  "atualizado_por": {
+    "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+    "nome": "Samir Fernandes",
+    "email": "master@artepersa.com.br",
+    "perfil": "master"
+  },
+  "observacoes_relacionadas": []
+}

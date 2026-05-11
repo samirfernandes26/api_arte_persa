@@ -1,0 +1,5 @@
+{
+  "message": "Transicao de status invalida: aberta -> entregue.",
+  "error": "Bad Request",
+  "statusCode": 400
+}

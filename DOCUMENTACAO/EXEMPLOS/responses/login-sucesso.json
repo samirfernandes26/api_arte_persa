@@ -1,0 +1,12 @@
+{
+  "usuario": {
+    "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+    "nome": "Samir Fernandes",
+    "email": "master@artepersa.com.br",
+    "perfil": "master",
+    "ativo": true,
+    "ultimo_login_em": "2026-05-11T18:10:00.000Z"
+  },
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access.token.exemplo",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh.token.exemplo"
+}

@@ -1,0 +1,17 @@
+{
+  "tipo_alvo": "ordem_servico",
+  "ordem_servico_id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+  "visibilidade": "interna",
+  "titulo": "Analise tecnica inicial",
+  "conteudo": "Foi identificado desgaste nas franjas do lado direito e necessidade de reforco de costura antes da lavagem profunda.",
+  "imagens": [
+    {
+      "chave_s3": "ordens/0b395729-f3e7-455c-bf1d-0d4338d6c104/observacoes/1715600000000-cfa6409c-dfd8-4f15-a660-124dfb1e48e0-franjas-direita.jpg",
+      "url_arquivo": "https://empresa-tapetes-persas.s3.us-east-1.amazonaws.com/ordens/0b395729-f3e7-455c-bf1d-0d4338d6c104/observacoes/1715600000000-cfa6409c-dfd8-4f15-a660-124dfb1e48e0-franjas-direita.jpg",
+      "nome_arquivo": "franjas-direita.jpg",
+      "tipo_mime": "image/jpeg",
+      "tamanho_bytes": 248500,
+      "posicao": 0
+    }
+  ]
+}
