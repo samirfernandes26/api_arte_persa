@@ -1,0 +1,90 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: desenvolvimento
+    container_name: api-ordens-servico-app
+    restart: unless-stopped
+    command: sh -c "npm run prisma:generate && npx prisma db push && npm run start:dev"
+    env_file:
+      - .env
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "${PORTA_APLICACAO:-3000}:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    container_name: api-ordens-servico-mysql
+    restart: unless-stopped
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_SENHA_ROOT:-root}
+      MYSQL_DATABASE: ${MYSQL_BANCO:-ordens_servico}
+      MYSQL_USER: ${MYSQL_USUARIO:-api_usuario}
+      MYSQL_PASSWORD: ${MYSQL_SENHA:-api_senha}
+    ports:
+      - "${MYSQL_PORTA_PUBLICA:-3306}:3306"
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - dados_mysql:/var/lib/mysql
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: api-ordens-servico-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORTA_PUBLICA:-6379}:6379"
+    healthcheck:
+      test:
+        - "CMD"
+        - "redis-cli"
+        - "ping"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - dados_redis:/data
+
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    container_name: api-ordens-servico-phpmyadmin
+    restart: unless-stopped
+    profiles:
+      - ferramentas
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_SENHA_ROOT:-root}
+      UPLOAD_LIMIT: 128M
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${PHPMYADMIN_PORTA:-8080}:80"
+
+volumes:
+  dados_mysql:
+  dados_redis:
