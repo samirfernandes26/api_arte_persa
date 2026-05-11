@@ -51,12 +51,12 @@ export default async function configurarInfraestruturaGlobal() {
     })
     .withCommand(['--default-authentication-plugin=mysql_native_password'])
     .withExposedPorts(3306)
-    .withWaitStrategy(Wait.forLogMessage(/ready for connections/i))
+    .withWaitStrategy(Wait.forListeningPorts())
     .start();
 
   const redis = await new GenericContainer('redis:latest')
     .withExposedPorts(6379)
-    .withWaitStrategy(Wait.forLogMessage(/Ready to accept connections/i))
+    .withWaitStrategy(Wait.forListeningPorts())
     .start();
 
   const estado: EstadoInfraestruturaIntegracao = {

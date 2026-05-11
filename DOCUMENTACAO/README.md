@@ -21,6 +21,7 @@ A aplicacao foi estruturada com:
 | [DATABASE.md](./DATABASE.md) | Explicacao do schema Prisma, relacionamentos, enums e auditoria |
 | [DTOs.md](./DTOs.md) | DTOs principais, validacoes e exemplos de uso |
 | [FILAS.md](./FILAS.md) | Filas BullMQ, jobs, processors e Bull Board |
+| [SEGURANCA.md](./SEGURANCA.md) | Criptografia, KMS, hardening HTTP e controles de seguranca |
 | [S3.md](./S3.md) | Estrategia de armazenamento em S3 e fluxo de upload |
 | [TESTES.md](./TESTES.md) | Testes unitarios, integracao e e2e |
 | [EXEMPLOS](./EXEMPLOS) | Payloads, responses e erros de referencia |
@@ -50,6 +51,7 @@ src/
 ├── faturas/
 ├── filas/
 ├── itens/
+├── kms/
 ├── observacoes/
 ├── ordens-servico/
 ├── prisma/
@@ -84,7 +86,10 @@ cp .env.example .env
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_REGION`
+- `AWS_KMS_KEY_ID`
 - `S3_BUCKET_NAME`
+- `USE_KMS_ENCRYPTION`
+- `S3_USE_KMS`
 
 ### Grupos principais
 
@@ -94,7 +99,7 @@ cp .env.example .env
 | Banco | `URL_BANCO_DADOS`, `MYSQL_*` |
 | Redis | `REDIS_*` |
 | JWT | `JWT_SEGREDO_ACESSO`, `JWT_TEMPO_ACESSO`, `JWT_SEGREDO_REFRESH`, `JWT_TEMPO_REFRESH` |
-| S3 | `AWS_*`, `S3_BUCKET_NAME`, `S3_PUBLIC_BASE_URL`, `S3_UPLOAD_URL_EXPIRES_IN`, `S3_GET_URL_EXPIRES_IN` |
+| S3 e KMS | `AWS_*`, `AWS_KMS_KEY_ID`, `S3_BUCKET_NAME`, `S3_PUBLIC_BASE_URL`, `S3_USE_KMS`, `USE_KMS_ENCRYPTION`, `CRIPTOGRAFIA_*`, `S3_UPLOAD_URL_EXPIRES_IN`, `S3_GET_URL_EXPIRES_IN` |
 | Filas | `BULLMQ_PREFIXO`, `CONCORRENCIA_FILA_*`, `CAMINHO_BULL_BOARD`, `PERFIS_BULL_BOARD` |
 | Regras de negocio | `DESCONTO_MAXIMO_FUNCIONARIO`, `DESCONTO_MAXIMO_SUPERVISOR`, `DESCONTO_MAXIMO_MASTER` |
 
@@ -257,6 +262,14 @@ Pastas principais no bucket:
 - `ordens/{ordemId}/documentos`
 - `clientes/{clienteId}/arquivos`
 - `faturas/{faturaId}/pdf`
+
+## Seguranca e criptografia
+
+- Uploads no S3 usam criptografia server-side com `SSE-KMS` por padrao
+- O projeto suporta fallback para `AES256` no S3 via configuracao
+- Campos sensiveis no banco usam envelope encryption em nivel de aplicacao
+- `clientes.documento` usa hash deterministico para busca exata e unicidade
+- Consulte [S3.md](./S3.md) e [SEGURANCA.md](./SEGURANCA.md) para a politica completa
 
 Detalhes completos em [S3.md](./S3.md).
 

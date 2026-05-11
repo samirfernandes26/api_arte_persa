@@ -172,11 +172,12 @@ model TokenRefresh {
 model Cliente {
   id                              String             @id @default(uuid()) @db.Char(36)
   tipo_pessoa                     TipoPessoaCliente
-  documento                       String?            @unique @db.VarChar(30)
+  documento                       String?            @db.Text
+  documento_hash                  String?            @unique @db.Char(64)
   nome_razao_social               String             @db.VarChar(191)
   nome_fantasia_apelido           String?            @db.VarChar(191)
-  email_principal                 String?            @db.VarChar(191)
-  telefone_principal              String?            @db.VarChar(40)
+  email_principal                 String?            @db.Text
+  telefone_principal              String?            @db.Text
   observacoes_internas            String?            @db.Text
   criado_por_id                   String?            @db.Char(36)
   atualizado_por_id               String?            @db.Char(36)
@@ -193,6 +194,7 @@ model Cliente {
   observacoes                     Observacao[]
 
   @@index([tipo_pessoa, ativo])
+  @@index([documento_hash])
   @@index([ativo, data_exclusao, data_criacao])
   @@map("clientes")
 }
@@ -204,7 +206,7 @@ model ContatoCliente {
   setor                            String?            @db.VarChar(100)
   cargo                            String?            @db.VarChar(100)
   tipo_contato                     TipoContatoCliente
-  valor                            String             @db.VarChar(191)
+  valor                            String             @db.Text
   principal                        Boolean            @default(false)
   observacoes                      String?            @db.Text
   ativo                            Boolean            @default(true)

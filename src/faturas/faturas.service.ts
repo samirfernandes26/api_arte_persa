@@ -12,6 +12,7 @@ import {
   paraDecimal,
 } from '../comum/utilitarios/dinheiro.util';
 import { FilasService } from '../filas/filas.service';
+import { KmsService } from '../kms/kms.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PayloadToken } from '../comum/interfaces/payload-token.interface';
 import { StatusFatura } from '../comum/enums/status-fatura.enum';
@@ -24,6 +25,7 @@ export class FaturasService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly filasService: FilasService,
+    private readonly kmsService: KmsService,
   ) {}
 
   async criar(dto: CriarFaturaDto, usuarioAtual: PayloadToken) {
@@ -62,11 +64,12 @@ export class FaturasService {
       valorImpostos,
       valorTotal,
     });
+    const emailCliente = await this.kmsService.decryptData(ordem.cliente.email_principal);
 
     await this.filasService.adicionarTarefaNotificacao({
       canal: 'email',
       tipo: 'fatura_criada',
-      destinatario: ordem.cliente.email_principal ?? fatura.numero,
+      destinatario: emailCliente ?? fatura.numero,
       assunto: `Fatura ${fatura.numero} criada`,
       mensagem: `A fatura da ordem ${ordem.codigo} foi criada.`,
       metadados: {
@@ -75,14 +78,14 @@ export class FaturasService {
       },
     });
 
-    return fatura;
+    return this.descriptografarFatura(fatura);
   }
 
   async listar(consulta: ConsultarFaturasDto) {
     const pagina = consulta.pagina ?? 1;
     const limite = consulta.limite ?? 20;
 
-    return this.prisma.fatura.findMany({
+    const faturas = await this.prisma.fatura.findMany({
       where: {
         ativo: true,
         data_exclusao: null,
@@ -105,6 +108,8 @@ export class FaturasService {
       skip: (pagina - 1) * limite,
       take: limite,
     });
+
+    return Promise.all(faturas.map((fatura) => this.descriptografarFatura(fatura)));
   }
 
   async buscarPorId(id: string) {
@@ -117,7 +122,7 @@ export class FaturasService {
       throw new NotFoundException('Fatura nao encontrada.');
     }
 
-    return fatura;
+    return this.descriptografarFatura(fatura);
   }
 
   async atualizarStatus(
@@ -129,7 +134,7 @@ export class FaturasService {
 
     const dadosStatus = this.mapearStatus(dto.status);
 
-    return this.prisma.fatura.update({
+    const fatura = await this.prisma.fatura.update({
       where: { id },
       data: {
         status: dto.status as unknown as StatusFaturaPrisma,
@@ -140,6 +145,8 @@ export class FaturasService {
       },
       include: this.includeCompleto(),
     });
+
+    return this.descriptografarFatura(fatura);
   }
 
   private mapearStatus(status: StatusFatura) {
@@ -250,5 +257,35 @@ export class FaturasService {
         orderBy: { data_criacao: 'desc' as const },
       },
     };
+  }
+
+  private async descriptografarFatura<T extends Record<string, unknown>>(
+    fatura: T,
+  ): Promise<T> {
+    const ordemServico = fatura.ordem_servico as
+      | {
+          cliente?: {
+            email_principal?: string | null;
+          } | null;
+        }
+      | undefined;
+
+    return {
+      ...fatura,
+      ordem_servico: ordemServico
+        ? {
+            ...ordemServico,
+            cliente: ordemServico.cliente
+              ? {
+                  ...ordemServico.cliente,
+                  email_principal:
+                    (await this.kmsService.decryptData(
+                      ordemServico.cliente.email_principal,
+                    )) ?? null,
+                }
+              : ordemServico.cliente,
+          }
+        : ordemServico,
+    } as T;
   }
 }

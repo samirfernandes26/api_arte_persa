@@ -89,17 +89,28 @@ export const esquemaAmbiente = z.object({
     z.string().optional(),
   ),
   AWS_REGION: z.string().min(1),
+  AWS_KMS_KEY_ID: z.preprocess(
+    stringVaziaParaUndefined,
+    z.string().min(10).optional(),
+  ),
   AWS_ENDPOINT: z.preprocess(
     stringVaziaParaUndefined,
     z.string().url().optional(),
   ),
   AWS_FORCE_PATH_STYLE: booleanoDoAmbiente.default(false),
   AWS_MAX_ATTEMPTS: inteiroDoAmbiente.default(3),
+  USE_KMS_ENCRYPTION: booleanoDoAmbiente.default(true),
+  CRIPTOGRAFIA_CHAVE_LOCAL_BASE64: z.preprocess(
+    stringVaziaParaUndefined,
+    z.string().optional(),
+  ),
+  CRIPTOGRAFIA_HASH_SEGREDO: z.string().min(32),
   S3_BUCKET_NAME: z.string().min(3),
   S3_PUBLIC_BASE_URL: z.preprocess(
     stringVaziaParaUndefined,
     z.string().url().optional(),
   ),
+  S3_USE_KMS: booleanoDoAmbiente.default(true),
   S3_UPLOAD_URL_EXPIRES_IN: inteiroDoAmbiente.default(900),
   S3_GET_URL_EXPIRES_IN: inteiroDoAmbiente.default(3600),
   BULLMQ_PREFIXO: z.string().min(1).default('ordens-servico'),
@@ -116,6 +127,24 @@ export const esquemaAmbiente = z.object({
   DESCONTO_MAXIMO_SUPERVISOR: decimalPositivoDoAmbiente.default(20),
   DESCONTO_MAXIMO_MASTER: decimalPositivoDoAmbiente.default(100),
   PHPMYADMIN_PORTA: inteiroDoAmbiente.default(8080),
+}).superRefine((ambiente, contexto) => {
+  if ((ambiente.USE_KMS_ENCRYPTION || ambiente.S3_USE_KMS) && !ambiente.AWS_KMS_KEY_ID) {
+    contexto.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        'AWS_KMS_KEY_ID e obrigatorio quando USE_KMS_ENCRYPTION=true ou S3_USE_KMS=true.',
+      path: ['AWS_KMS_KEY_ID'],
+    });
+  }
+
+  if (!ambiente.USE_KMS_ENCRYPTION && !ambiente.CRIPTOGRAFIA_CHAVE_LOCAL_BASE64) {
+    contexto.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        'CRIPTOGRAFIA_CHAVE_LOCAL_BASE64 e obrigatoria quando USE_KMS_ENCRYPTION=false.',
+      path: ['CRIPTOGRAFIA_CHAVE_LOCAL_BASE64'],
+    });
+  }
 });
 
 export type Ambiente = z.infer<typeof esquemaAmbiente>;

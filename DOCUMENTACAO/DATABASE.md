@@ -66,7 +66,8 @@ Observacoes:
 
 Observacoes:
 
-- `clientes.documento` e unico quando informado
+- `clientes.documento` fica criptografado em nivel de aplicacao
+- `clientes.documento_hash` e unico e suporta busca exata sem expor o valor real
 - cada cliente pode possuir multiplos contatos e enderecos
 - os arquivos guardam apenas `chave_s3` e `url_arquivo`
 
@@ -112,6 +113,7 @@ Campos relevantes em `ordens_servico`:
 Observacoes:
 
 - `snapshot_*` preserva contexto historico
+- `snapshot_cliente`, `snapshot_endereco_coleta` e `snapshot_endereco_entrega` ficam criptografados em envelope JSON no banco
 - os valores financeiros usam `Decimal`
 - `fatura` e relacao 1:1
 
@@ -169,6 +171,7 @@ Exemplos de indices estrategicos:
 
 - `usuarios(perfil, ativo)`
 - `clientes(tipo_pessoa, ativo)`
+- `clientes(documento_hash)`
 - `servicos_catalogo(nome, ativo)`
 - `ordens_servico(cliente_id, data_criacao)`
 - `ordens_servico(status, agendada_coleta_em)`

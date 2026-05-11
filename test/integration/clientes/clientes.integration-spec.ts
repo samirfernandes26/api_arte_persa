@@ -51,6 +51,22 @@ describe('Integracao - Clientes', () => {
     expect(resposta.body.contatos).toHaveLength(2);
     expect(resposta.body.enderecos).toHaveLength(2);
     expect(resposta.body.nome_razao_social).toBe(payload.nome_razao_social);
+    expect(resposta.body.documento).toBe(payload.documento);
+    expect(resposta.body.email_principal).toBe(payload.email_principal);
+
+    const clientePersistido = await prisma.cliente.findUnique({
+      where: { id: resposta.body.id },
+      include: {
+        contatos: true,
+      },
+    });
+
+    expect(clientePersistido?.documento).not.toBe(payload.documento);
+    expect(clientePersistido?.email_principal).not.toBe(payload.email_principal);
+    expect(clientePersistido?.observacoes_internas).not.toBe(
+      payload.observacoes_internas,
+    );
+    expect(clientePersistido?.contatos[0]?.valor).not.toBe(payload.contatos?.[0]?.valor);
   });
 
   it('aplica validacao aninhada e rejeita endereco invalido', async () => {

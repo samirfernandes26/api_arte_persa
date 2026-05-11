@@ -31,11 +31,16 @@ export class S3FalsoMemoria {
       url,
     });
 
+    const usarKms = process.env.S3_USE_KMS === 'true';
+    const chaveKmsId = process.env.AWS_KMS_KEY_ID || undefined;
+
     return {
       bucket: this.bucketPadrao,
       chave,
       url,
       etag: `etag-${chave}`,
+      criptografia_servidor: usarKms ? 'aws:kms' : 'AES256',
+      kms_key_id: usarKms ? chaveKmsId : undefined,
     };
   }
 
@@ -49,14 +54,27 @@ export class S3FalsoMemoria {
     entrada: EntradaUrlPreAssinadaS3,
   ): Promise<ResultadoUrlPreAssinadaS3> {
     const chave = entrada.chave.replace(/^\/+/, '');
+    const usarKms = process.env.S3_USE_KMS === 'true';
+    const chaveKmsId = process.env.AWS_KMS_KEY_ID || undefined;
+    const cabecalhos: Record<string, string> = {};
+
+    if (entrada.tipo_conteudo) {
+      cabecalhos['Content-Type'] = entrada.tipo_conteudo;
+    }
+
+    cabecalhos['x-amz-server-side-encryption'] = usarKms ? 'aws:kms' : 'AES256';
+    if (usarKms && chaveKmsId) {
+      cabecalhos['x-amz-server-side-encryption-aws-kms-key-id'] = chaveKmsId;
+    }
+
     return {
       chave,
       url: `https://s3-falso.local/${chave}`,
       metodo: entrada.operacao === 'getObject' ? 'GET' : 'PUT',
       expira_em: entrada.expira_em ?? 900,
-      cabecalhos: entrada.tipo_conteudo
-        ? { 'Content-Type': entrada.tipo_conteudo }
-        : {},
+      cabecalhos,
+      criptografia_servidor: usarKms ? 'aws:kms' : 'AES256',
+      kms_key_id: usarKms ? chaveKmsId : undefined,
     };
   }
 

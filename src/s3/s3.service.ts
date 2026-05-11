@@ -17,6 +17,7 @@ import {
   EntradaUrlPreAssinadaS3,
   ResultadoEnvioArquivoS3,
   ResultadoUrlPreAssinadaS3,
+  TipoCriptografiaServidorS3,
 } from './s3.types';
 
 @Injectable()
@@ -29,6 +30,8 @@ export class ServicoS3 {
   private readonly endpoint?: string;
   private readonly regiao: string;
   private readonly forcePathStyle: boolean;
+  private readonly usarKmsNoS3: boolean;
+  private readonly chaveKmsId?: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -51,6 +54,14 @@ export class ServicoS3 {
       'AWS_FORCE_PATH_STYLE',
       false,
     );
+    this.usarKmsNoS3 = this.configService.get<boolean>('S3_USE_KMS', true);
+    this.chaveKmsId = this.configService.get<string>('AWS_KMS_KEY_ID') || undefined;
+
+    if (this.usarKmsNoS3 && !this.chaveKmsId) {
+      throw new Error(
+        'AWS_KMS_KEY_ID precisa ser informado quando S3_USE_KMS=true.',
+      );
+    }
   }
 
   async enviarArquivo(
@@ -60,6 +71,7 @@ export class ServicoS3 {
     const chaveNormalizada = this.normalizarChave(entrada.chave);
 
     try {
+      const configuracaoCriptografia = this.resolverCriptografiaServidor();
       const resposta = await this.s3Client.send(
         new PutObjectCommand({
           Bucket: bucket,
@@ -69,6 +81,8 @@ export class ServicoS3 {
           ContentDisposition: entrada.disposicao_conteudo,
           CacheControl: entrada.cache_control,
           Metadata: entrada.metadados,
+          ServerSideEncryption: configuracaoCriptografia.tipo,
+          SSEKMSKeyId: configuracaoCriptografia.kmsKeyId,
         }),
       );
 
@@ -80,6 +94,8 @@ export class ServicoS3 {
         chave: chaveNormalizada,
         url,
         etag: resposta.ETag,
+        criptografia_servidor: configuracaoCriptografia.tipo,
+        kms_key_id: configuracaoCriptografia.kmsKeyId,
       };
     } catch (erro) {
       this.logger.error(
@@ -115,6 +131,7 @@ export class ServicoS3 {
     }
 
     try {
+      const configuracaoCriptografia = this.resolverCriptografiaServidor();
       const comando =
         operacao === 'putObject'
           ? new PutObjectCommand({
@@ -124,6 +141,8 @@ export class ServicoS3 {
               ContentDisposition: entrada.disposicao_conteudo,
               CacheControl: entrada.cache_control,
               Metadata: entrada.metadados,
+              ServerSideEncryption: configuracaoCriptografia.tipo,
+              SSEKMSKeyId: configuracaoCriptografia.kmsKeyId,
             })
           : new GetObjectCommand({
               Bucket: bucket,
@@ -141,6 +160,13 @@ export class ServicoS3 {
       if (operacao === 'putObject' && entrada.tipo_conteudo) {
         cabecalhos['Content-Type'] = entrada.tipo_conteudo;
       }
+      if (operacao === 'putObject') {
+        cabecalhos['x-amz-server-side-encryption'] = configuracaoCriptografia.tipo;
+        if (configuracaoCriptografia.kmsKeyId) {
+          cabecalhos['x-amz-server-side-encryption-aws-kms-key-id'] =
+            configuracaoCriptografia.kmsKeyId;
+        }
+      }
 
       this.logger.log(
         `URL pre-assinada gerada para s3://${bucket}/${chaveNormalizada}`,
@@ -152,6 +178,10 @@ export class ServicoS3 {
         metodo: operacao === 'putObject' ? 'PUT' : 'GET',
         expira_em: expiraEm,
         cabecalhos,
+        criptografia_servidor:
+          operacao === 'putObject' ? configuracaoCriptografia.tipo : undefined,
+        kms_key_id:
+          operacao === 'putObject' ? configuracaoCriptografia.kmsKeyId : undefined,
       };
     } catch (erro) {
       this.logger.error(
@@ -267,6 +297,22 @@ export class ServicoS3 {
     }
 
     return chaveNormalizada;
+  }
+
+  private resolverCriptografiaServidor(): {
+    tipo: TipoCriptografiaServidorS3;
+    kmsKeyId?: string;
+  } {
+    if (this.usarKmsNoS3) {
+      return {
+        tipo: 'aws:kms',
+        kmsKeyId: this.chaveKmsId,
+      };
+    }
+
+    return {
+      tipo: 'AES256',
+    };
   }
 }
 

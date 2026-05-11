@@ -88,6 +88,14 @@ describe('Integracao - Ordens de Servico', () => {
       '800',
     );
     expect(ordem.body.historico_status).toHaveLength(1);
+    expect(ordem.body.motivo_desconto).toBe(payloadOrdem.motivo_desconto);
+
+    const ordemPersistida = await prisma.ordemServico.findUnique({
+      where: { id: ordem.body.id },
+    });
+
+    expect(ordemPersistida?.motivo_desconto).not.toBe(payloadOrdem.motivo_desconto);
+    expect(ordemPersistida?.snapshot_cliente).toHaveProperty('__kms_envelope_v1');
 
     await request(app.getHttpServer())
       .post('/api/observacoes')
@@ -116,6 +124,7 @@ describe('Integracao - Ordens de Servico', () => {
       '800',
     );
     expect(ordemAtualizada.body.observacoes).toHaveLength(1);
+    expect(ordemAtualizada.body.snapshot_cliente.documento).toBe(cliente.body.documento);
   });
 
   it('bloqueia desconto acima do limite de funcionario sem aprovacao', async () => {

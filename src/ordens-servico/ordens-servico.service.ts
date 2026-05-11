@@ -29,6 +29,7 @@ import {
 import { validarDescontoPorPerfil } from '../comum/utilitarios/desconto.util';
 import { validarTransicaoStatusOrdemServico } from '../comum/utilitarios/status-ordem-servico.util';
 import { FilasService } from '../filas/filas.service';
+import { KmsService } from '../kms/kms.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AtualizarOrdemServicoDto } from './dto/atualizar-ordem-servico.dto';
 import { AtualizarStatusOrdemServicoDto } from './dto/atualizar-status-ordem-servico.dto';
@@ -134,6 +135,7 @@ export class OrdensServicoService {
     private readonly configService: ConfigService,
     private readonly clientesService: ClientesService,
     private readonly filasService: FilasService,
+    private readonly kmsService: KmsService,
   ) {}
 
   async criar(dto: CriarOrdemServicoDto, usuarioAtual: PayloadToken) {
@@ -159,6 +161,50 @@ export class OrdensServicoService {
       percentualDesconto,
       paraDecimal(dto.valor_frete ?? 0),
     );
+    const snapshotClienteCriptografado = await this.kmsService.criptografarJson(
+      cliente.cliente,
+      {
+        entidade: 'ordem_servico',
+        campo: 'snapshot_cliente',
+      },
+    );
+    const snapshotEnderecoColetaCriptografado =
+      await this.kmsService.criptografarJson(
+        dto.snapshot_endereco_coleta ?? cliente.endereco_padrao,
+        {
+          entidade: 'ordem_servico',
+          campo: 'snapshot_endereco_coleta',
+        },
+      );
+    const snapshotEnderecoEntregaCriptografado =
+      await this.kmsService.criptografarJson(
+        dto.snapshot_endereco_entrega ?? cliente.endereco_padrao,
+        {
+          entidade: 'ordem_servico',
+          campo: 'snapshot_endereco_entrega',
+        },
+      );
+    const motivoDescontoCriptografado = await this.kmsService.encryptData(
+      dto.motivo_desconto,
+      {
+        entidade: 'ordem_servico',
+        campo: 'motivo_desconto',
+      },
+    );
+    const observacoesInternasCriptografadas = await this.kmsService.encryptData(
+      dto.observacoes_internas,
+      {
+        entidade: 'ordem_servico',
+        campo: 'observacoes_internas',
+      },
+    );
+    const observacoesClienteCriptografadas = await this.kmsService.encryptData(
+      dto.observacoes_cliente,
+      {
+        entidade: 'ordem_servico',
+        campo: 'observacoes_cliente',
+      },
+    );
     const responsavelId = dto.responsavel_id ?? usuarioAtual.sub;
     await this.obterUsuarioAtivo(responsavelId);
 
@@ -170,6 +216,12 @@ export class OrdensServicoService {
       totais,
       responsavelId,
       usuarioAtual,
+      snapshotClienteCriptografado,
+      snapshotEnderecoColetaCriptografado,
+      snapshotEnderecoEntregaCriptografado,
+      motivoDescontoCriptografado,
+      observacoesInternasCriptografadas,
+      observacoesClienteCriptografadas,
     });
 
     const ordemCompleta = await this.buscarPorId(ordemId);
@@ -181,7 +233,7 @@ export class OrdensServicoService {
     const pagina = consulta.pagina ?? 1;
     const limite = consulta.limite ?? 20;
 
-    return this.prisma.ordemServico.findMany({
+    const ordens = await this.prisma.ordemServico.findMany({
       where: {
         ativo: true,
         data_exclusao: null,
@@ -204,6 +256,8 @@ export class OrdensServicoService {
       skip: (pagina - 1) * limite,
       take: limite,
     });
+
+    return Promise.all(ordens.map((ordem) => this.descriptografarOrdemServico(ordem)));
   }
 
   async buscarPorId(id: string): Promise<OrdemServicoCompleta> {
@@ -216,7 +270,7 @@ export class OrdensServicoService {
       throw new NotFoundException('Ordem de servico nao encontrada.');
     }
 
-    return ordem;
+    return this.descriptografarOrdemServico(ordem);
   }
 
   async atualizar(
@@ -259,6 +313,60 @@ export class OrdensServicoService {
       : this.reaproveitarItensDaOrdem(ordemAtual);
     const totais = this.calcularTotais(itensMontados, percentualDesconto, valorFrete);
     const itemIdsAtivos = ordemAtual.itens.map((item) => item.id);
+    const snapshotClienteCriptografado = await this.kmsService.criptografarJson(
+      cliente.cliente,
+      {
+        entidade: 'ordem_servico',
+        campo: 'snapshot_cliente',
+        identificador: id,
+      },
+    );
+    const snapshotEnderecoColetaCriptografado =
+      await this.kmsService.criptografarJson(
+        dto.snapshot_endereco_coleta ??
+          ordemAtual.snapshot_endereco_coleta ??
+          cliente.endereco_padrao,
+        {
+          entidade: 'ordem_servico',
+          campo: 'snapshot_endereco_coleta',
+          identificador: id,
+        },
+      );
+    const snapshotEnderecoEntregaCriptografado =
+      await this.kmsService.criptografarJson(
+        dto.snapshot_endereco_entrega ??
+          ordemAtual.snapshot_endereco_entrega ??
+          cliente.endereco_padrao,
+        {
+          entidade: 'ordem_servico',
+          campo: 'snapshot_endereco_entrega',
+          identificador: id,
+        },
+      );
+    const motivoDescontoCriptografado =
+      dto.motivo_desconto !== undefined
+        ? await this.kmsService.encryptData(dto.motivo_desconto, {
+            entidade: 'ordem_servico',
+            campo: 'motivo_desconto',
+            identificador: id,
+          })
+        : undefined;
+    const observacoesInternasCriptografadas =
+      dto.observacoes_internas !== undefined
+        ? await this.kmsService.encryptData(dto.observacoes_internas, {
+            entidade: 'ordem_servico',
+            campo: 'observacoes_internas',
+            identificador: id,
+          })
+        : undefined;
+    const observacoesClienteCriptografadas =
+      dto.observacoes_cliente !== undefined
+        ? await this.kmsService.encryptData(dto.observacoes_cliente, {
+            entidade: 'ordem_servico',
+            campo: 'observacoes_cliente',
+            identificador: id,
+          })
+        : undefined;
 
     await this.prisma.$transaction(async (transacao) => {
       const agora = new Date();
@@ -272,28 +380,18 @@ export class OrdensServicoService {
           aprovado_por_desconto_id:
             dto.aprovado_por_desconto_id ?? ordemAtual.aprovado_por_desconto_id,
           canal_entrada: dto.canal_entrada ?? ordemAtual.canal_entrada,
-          snapshot_cliente: this.paraJson(cliente.cliente),
-          snapshot_endereco_coleta: this.paraJson(
-            dto.snapshot_endereco_coleta ??
-              ordemAtual.snapshot_endereco_coleta ??
-              cliente.endereco_padrao,
-          ),
-          snapshot_endereco_entrega: this.paraJson(
-            dto.snapshot_endereco_entrega ??
-              ordemAtual.snapshot_endereco_entrega ??
-              cliente.endereco_padrao,
-          ),
+          snapshot_cliente: this.paraJson(snapshotClienteCriptografado),
+          snapshot_endereco_coleta: this.paraJson(snapshotEnderecoColetaCriptografado),
+          snapshot_endereco_entrega: this.paraJson(snapshotEnderecoEntregaCriptografado),
           snapshot_politica_desconto: this.paraJson(limites),
           percentual_desconto: paraDecimal(percentualDesconto),
           valor_desconto: totais.valor_desconto,
           valor_frete: valorFrete,
           valor_subtotal: totais.valor_subtotal,
           valor_total: totais.valor_total,
-          motivo_desconto: dto.motivo_desconto ?? ordemAtual.motivo_desconto,
-          observacoes_internas:
-            dto.observacoes_internas ?? ordemAtual.observacoes_internas,
-          observacoes_cliente:
-            dto.observacoes_cliente ?? ordemAtual.observacoes_cliente,
+          motivo_desconto: motivoDescontoCriptografado,
+          observacoes_internas: observacoesInternasCriptografadas,
+          observacoes_cliente: observacoesClienteCriptografadas,
         },
       });
 
@@ -661,6 +759,12 @@ export class OrdensServicoService {
     };
     responsavelId: string;
     usuarioAtual: PayloadToken;
+    snapshotClienteCriptografado: unknown;
+    snapshotEnderecoColetaCriptografado: unknown;
+    snapshotEnderecoEntregaCriptografado: unknown;
+    motivoDescontoCriptografado: string | null | undefined;
+    observacoesInternasCriptografadas: string | null | undefined;
+    observacoesClienteCriptografadas: string | null | undefined;
   }): Promise<string> {
     for (let tentativa = 1; tentativa <= 5; tentativa += 1) {
       const codigo = this.gerarCodigoOrdemServico();
@@ -676,14 +780,14 @@ export class OrdensServicoService {
               responsavel_id: entrada.responsavelId,
               aprovado_por_desconto_id: entrada.dto.aprovado_por_desconto_id,
               canal_entrada: entrada.dto.canal_entrada,
-              snapshot_cliente: this.paraJson(entrada.cliente.cliente),
+              snapshot_cliente: this.paraJson(
+                entrada.snapshotClienteCriptografado,
+              ),
               snapshot_endereco_coleta: this.paraJson(
-                entrada.dto.snapshot_endereco_coleta ??
-                  entrada.cliente.endereco_padrao,
+                entrada.snapshotEnderecoColetaCriptografado,
               ),
               snapshot_endereco_entrega: this.paraJson(
-                entrada.dto.snapshot_endereco_entrega ??
-                  entrada.cliente.endereco_padrao,
+                entrada.snapshotEnderecoEntregaCriptografado,
               ),
               snapshot_politica_desconto: this.paraJson(entrada.limites),
               percentual_desconto: paraDecimal(
@@ -693,9 +797,9 @@ export class OrdensServicoService {
               valor_frete: paraDecimal(entrada.dto.valor_frete ?? 0),
               valor_subtotal: entrada.totais.valor_subtotal,
               valor_total: entrada.totais.valor_total,
-              motivo_desconto: entrada.dto.motivo_desconto,
-              observacoes_internas: entrada.dto.observacoes_internas,
-              observacoes_cliente: entrada.dto.observacoes_cliente,
+              motivo_desconto: entrada.motivoDescontoCriptografado,
+              observacoes_internas: entrada.observacoesInternasCriptografadas,
+              observacoes_cliente: entrada.observacoesClienteCriptografadas,
             },
           });
 
@@ -856,5 +960,54 @@ export class OrdensServicoService {
     }
 
     return valor as Prisma.InputJsonValue;
+  }
+
+  private async descriptografarOrdemServico<T extends Record<string, unknown>>(
+    ordem: T,
+  ): Promise<T> {
+    const cliente = ordem.cliente as
+      | {
+          documento?: string | null;
+          email_principal?: string | null;
+          telefone_principal?: string | null;
+        }
+      | undefined;
+
+    return {
+      ...ordem,
+      cliente: cliente
+        ? {
+            ...cliente,
+            documento: await this.kmsService.decryptData(cliente.documento),
+            email_principal: await this.kmsService.decryptData(
+              cliente.email_principal,
+            ),
+            telefone_principal: await this.kmsService.decryptData(
+              cliente.telefone_principal,
+            ),
+          }
+        : cliente,
+      snapshot_cliente: await this.kmsService.descriptografarJson(
+        ordem.snapshot_cliente,
+      ),
+      snapshot_endereco_coleta: await this.kmsService.descriptografarJson(
+        ordem.snapshot_endereco_coleta,
+      ),
+      snapshot_endereco_entrega: await this.kmsService.descriptografarJson(
+        ordem.snapshot_endereco_entrega,
+      ),
+      motivo_desconto:
+        (await this.kmsService.decryptData(
+          ordem.motivo_desconto as string | null | undefined,
+        )) ?? null,
+      observacoes_internas:
+        (await this.kmsService.decryptData(
+          ordem.observacoes_internas as string | null | undefined,
+        )) ?? null,
+      observacoes_cliente:
+        (await this.kmsService.decryptData(
+          ordem.observacoes_cliente as string | null | undefined,
+        )) ?? null,
+    } as T;
   }
 }

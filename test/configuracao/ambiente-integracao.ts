@@ -75,9 +75,16 @@ export const montarVariaveisAmbienteIntegracao = (
     AWS_ACCESS_KEY_ID: 'teste',
     AWS_SECRET_ACCESS_KEY: 'teste',
     AWS_REGION: 'us-east-1',
+    AWS_KMS_KEY_ID: 'arn:aws:kms:us-east-1:123456789012:key/teste-integracao',
     AWS_FORCE_PATH_STYLE: 'true',
     AWS_MAX_ATTEMPTS: '2',
+    USE_KMS_ENCRYPTION: 'false',
+    CRIPTOGRAFIA_CHAVE_LOCAL_BASE64:
+      'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=',
+    CRIPTOGRAFIA_HASH_SEGREDO:
+      'segredo-hmac-integracao-super-seguro-para-campos-sensiveis-123456',
     S3_BUCKET_NAME: 'bucket-teste-integracao',
+    S3_USE_KMS: 'true',
     S3_UPLOAD_URL_EXPIRES_IN: '900',
     S3_GET_URL_EXPIRES_IN: '900',
     BULLMQ_PREFIXO: 'ordens-servico-teste',

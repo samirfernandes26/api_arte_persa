@@ -1,3 +1,5 @@
+export type TipoCriptografiaServidorS3 = 'aws:kms' | 'AES256';
+
 export interface EntradaEnvioArquivoS3 {
   chave: string;
   corpo: Buffer | Uint8Array | string;
@@ -13,6 +15,8 @@ export interface ResultadoEnvioArquivoS3 {
   chave: string;
   url: string;
   etag?: string;
+  criptografia_servidor?: TipoCriptografiaServidorS3;
+  kms_key_id?: string;
 }
 
 export interface EntradaUrlPreAssinadaS3 {
@@ -32,4 +36,6 @@ export interface ResultadoUrlPreAssinadaS3 {
   metodo: 'PUT' | 'GET';
   expira_em: number;
   cabecalhos: Record<string, string>;
+  criptografia_servidor?: TipoCriptografiaServidorS3;
+  kms_key_id?: string;
 }

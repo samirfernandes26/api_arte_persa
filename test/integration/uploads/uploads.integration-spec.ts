@@ -62,6 +62,10 @@ describe('Integracao - Uploads e S3', () => {
       .expect(201);
 
     expect(presigned.body.chave).toContain(`clientes/${cliente.body.id}/arquivos/`);
+    expect(presigned.body.cabecalhos['x-amz-server-side-encryption']).toBe('aws:kms');
+    expect(
+      presigned.body.cabecalhos['x-amz-server-side-encryption-aws-kms-key-id'],
+    ).toContain('arn:aws:kms:us-east-1:123456789012:key/teste-integracao');
 
     s3Falso.registrarUploadSimulado(
       presigned.body.chave,

@@ -11,6 +11,7 @@ import { validarAmbiente } from './configuracao/esquema-ambiente';
 import { FaturasModule } from './faturas/faturas.module';
 import { FilasModule } from './filas/filas.module';
 import { ItensModule } from './itens/itens.module';
+import { KmsModule } from './kms/kms.module';
 import { ObservacoesModule } from './observacoes/observacoes.module';
 import { OrdensServicoModule } from './ordens-servico/ordens-servico.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -50,6 +51,7 @@ import { ControladorAplicacao } from './controlador-aplicacao';
         ],
       }),
     }),
+    KmsModule,
     PrismaModule,
     S3Module,
     FilasModule,

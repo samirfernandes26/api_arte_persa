@@ -88,7 +88,7 @@ Response de referencia: [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.
 
 - Atualizar cliente com `contatos` ou `enderecos` substitui os registros ativos anteriores
 - O modulo aceita estruturas aninhadas
-- O campo `busca` procura por nome, fantasia/apelido e documento
+- O campo `busca` procura por nome, fantasia/apelido e documento em modo exato por hash seguro
 
 ### Exemplo detalhado: criar cliente
 
@@ -194,6 +194,10 @@ Response: [ordem-servico-detalhe.json](./EXEMPLOS/responses/ordem-servico-detalh
 1. Solicitar URL pre-assinada
 2. Fazer upload `PUT` direto no S3
 3. Confirmar a persistencia no modulo apropriado
+
+Observacao:
+
+- quando `S3_USE_KMS=true`, a resposta da URL pre-assinada devolve os cabecalhos `x-amz-server-side-encryption` e `x-amz-server-side-encryption-aws-kms-key-id`
 
 ## 9. Faturas
 
