@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Job, Worker } from 'bullmq';
 import Redis from 'ioredis';
 import sharp from 'sharp';
-import { S3Service } from '../s3/s3.service';
+import { ServicoS3 } from '../s3/s3.service';
 import { NOME_FILA_IMAGEM } from '../filas/constantes-fila';
 import { CONEXAO_REDIS } from '../filas/tokens-fila';
 import {
@@ -21,7 +21,7 @@ export class ProcessadorImagem implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly s3Service: S3Service,
+    private readonly s3Service: ServicoS3,
     @Inject(CONEXAO_REDIS)
     private readonly conexaoRedis: Redis,
   ) {}

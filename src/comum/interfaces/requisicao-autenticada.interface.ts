@@ -1,6 +1,6 @@
 import { Request } from 'express';
-import { PayloadToken } from './payload-token.interface';
+import { PayloadAutenticacao } from './payload-token.interface';
 
 export interface RequisicaoAutenticada extends Request {
-  usuario?: PayloadToken;
+  usuario?: PayloadAutenticacao;
 }

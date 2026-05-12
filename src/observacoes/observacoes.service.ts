@@ -3,36 +3,37 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { ServicoPrisma } from '../prisma/prisma.service';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import { TipoAlvoObservacao } from '../comum/enums/tipo-alvo-observacao.enum';
+import { ServicoUploads } from '../uploads/uploads.service';
 import { AdicionarObservacaoDto } from './dto/adicionar-observacao.dto';
 
 @Injectable()
 export class ObservacoesService {
-  private readonly limiteArquivoBytes: number;
-  private readonly tiposMimeImagemPermitidos: Set<string>;
-
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
-  ) {
-    this.limiteArquivoBytes =
-      this.configService.get<number>('LIMITE_MB_ARQUIVO_IMAGEM', 15) * 1024 * 1024;
-    this.tiposMimeImagemPermitidos = new Set(
-      this.configService
-        .get<string>('TIPOS_MIME_PERMITIDOS_IMAGEM', '')
-        .split(',')
-        .map((item) => item.trim().toLowerCase())
-        .filter(Boolean),
-    );
-  }
+    private readonly prisma: ServicoPrisma,
+    private readonly uploadsService: ServicoUploads,
+  ) {}
 
-  async adicionar(dto: AdicionarObservacaoDto, usuarioAtual: PayloadToken) {
+  async adicionar(dto: AdicionarObservacaoDto, usuarioAtual: PayloadAutenticacao) {
     this.validarAlvo(dto);
     const referencias = await this.validarExistenciaAlvo(dto);
-    this.validarImagens(dto, referencias.ordem_servico_id_upload);
+    const imagensValidadas = dto.imagens?.length
+      ? await Promise.all(
+          dto.imagens.map((imagem) =>
+            this.uploadsService.confirmarImagemObservacao({
+              ordem_servico_id: referencias.ordem_servico_id_upload,
+              cliente_id: dto.cliente_id,
+              fatura_id: dto.fatura_id,
+              chave_s3: imagem.chave_s3,
+              nome_arquivo: imagem.nome_arquivo,
+              tipo_mime: imagem.tipo_mime,
+              tamanho_bytes: imagem.tamanho_bytes,
+            }),
+          ),
+        )
+      : [];
 
     return this.prisma.observacao.create({
       data: {
@@ -46,15 +47,18 @@ export class ObservacoesService {
         visibilidade: dto.visibilidade,
         titulo: dto.titulo,
         conteudo: dto.conteudo,
-        imagens: dto.imagens?.length
+        imagens: imagensValidadas.length
           ? {
-              create: dto.imagens.map((imagem) => ({
+              create: imagensValidadas.map((imagem, indice) => ({
+                criado_por_id: usuarioAtual.sub,
+                atualizado_por_id: usuarioAtual.sub,
                 chave_s3: imagem.chave_s3,
                 url_arquivo: imagem.url_arquivo,
                 nome_arquivo: imagem.nome_arquivo,
                 tipo_mime: imagem.tipo_mime,
-                tamanho_bytes: imagem.tamanho_bytes,
-                posicao: imagem.posicao,
+                tamanho_bytes:
+                  imagem.tamanho_bytes ?? dto.imagens?.[indice]?.tamanho_bytes ?? 0,
+                posicao: dto.imagens?.[indice]?.posicao ?? indice,
               })),
             }
           : undefined,
@@ -233,77 +237,5 @@ export class ObservacoesService {
         orderBy: { posicao: 'asc' as const },
       },
     };
-  }
-
-  private validarImagens(
-    dto: AdicionarObservacaoDto,
-    ordemServicoIdUpload?: string,
-  ): void {
-    if (!dto.imagens?.length) {
-      return;
-    }
-
-    if (!ordemServicoIdUpload) {
-      throw new BadRequestException(
-        'Nao foi possivel determinar a ordem de servico vinculada as imagens da observacao.',
-      );
-    }
-
-    for (const imagem of dto.imagens) {
-      const mimeNormalizado = imagem.tipo_mime.trim().toLowerCase();
-      if (!this.tiposMimeImagemPermitidos.has(mimeNormalizado)) {
-        throw new BadRequestException(
-          `Tipo MIME nao permitido para imagem de observacao: ${mimeNormalizado}.`,
-        );
-      }
-
-      if (imagem.tamanho_bytes > this.limiteArquivoBytes) {
-        throw new BadRequestException(
-          `A imagem excede o limite configurado de ${Math.round(
-            this.limiteArquivoBytes / (1024 * 1024),
-          )} MB.`,
-        );
-      }
-
-      this.validarChaveEsperada(imagem.chave_s3, this.resolverPrefixoImagem(dto, ordemServicoIdUpload));
-    }
-  }
-
-  private resolverPrefixoImagem(
-    dto: AdicionarObservacaoDto,
-    ordemServicoIdUpload?: string,
-  ): string {
-    if (dto.ordem_servico_id || dto.item_ordem_servico_id) {
-      if (!ordemServicoIdUpload) {
-        throw new BadRequestException(
-          'Nao foi possivel determinar a ordem de servico vinculada a observacao.',
-        );
-      }
-
-      return `ordens/${ordemServicoIdUpload}/observacoes`;
-    }
-
-    if (dto.cliente_id) {
-      return `clientes/${dto.cliente_id}/observacoes`;
-    }
-
-    if (dto.fatura_id) {
-      return `faturas/${dto.fatura_id}/observacoes`;
-    }
-
-    throw new BadRequestException(
-      'Nao foi possivel determinar o prefixo de upload da observacao.',
-    );
-  }
-
-  private validarChaveEsperada(chave: string, prefixoEsperado: string): void {
-    const chaveNormalizada = chave.trim().replace(/^\/+/, '');
-    const prefixoNormalizado = prefixoEsperado.trim().replace(/^\/+/, '');
-
-    if (!chaveNormalizada.startsWith(`${prefixoNormalizado}/`)) {
-      throw new BadRequestException(
-        `A chave S3 informada nao pertence ao prefixo permitido: ${prefixoNormalizado}.`,
-      );
-    }
   }
 }

@@ -11,7 +11,7 @@ import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
  * - `email` precisa estar em formato valido.
  * - `senha` exige no minimo 8 caracteres para evitar logins com credenciais fracas.
  */
-export class LoginDto {
+export class EntrarDto {
   @IsEmail({}, { message: 'Informe um e-mail valido.' })
   email!: string;
 

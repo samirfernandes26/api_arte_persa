@@ -1,6 +1,7 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -17,6 +18,7 @@ import {
   EntradaUrlPreAssinadaS3,
   ResultadoEnvioArquivoS3,
   ResultadoUrlPreAssinadaS3,
+  MetadadosObjetoS3,
   TipoCriptografiaServidorS3,
 } from './s3.types';
 
@@ -289,6 +291,51 @@ export class ServicoS3 {
     return this.obterBufferObjeto(chave, bucket);
   }
 
+  async obterMetadadosObjeto(
+    chave: string,
+    bucket = this.bucketPadrao,
+  ): Promise<MetadadosObjetoS3 | null> {
+    const chaveNormalizada = this.normalizarChave(chave);
+
+    try {
+      const resposta = await this.s3Client.send(
+        new HeadObjectCommand({
+          Bucket: bucket,
+          Key: chaveNormalizada,
+        }),
+      );
+
+      return {
+        bucket,
+        chave: chaveNormalizada,
+        tipo_conteudo: resposta.ContentType ?? undefined,
+        tamanho_bytes: resposta.ContentLength ?? undefined,
+        etag: resposta.ETag ?? undefined,
+        metadados: resposta.Metadata ?? {},
+      };
+    } catch (erro) {
+      if (this.ehObjetoNaoEncontrado(erro)) {
+        this.logger.warn(`Objeto S3 nao encontrado em s3://${bucket}/${chaveNormalizada}`);
+        return null;
+      }
+
+      this.logger.error(
+        `Falha ao obter metadados de s3://${bucket}/${chaveNormalizada}`,
+        erro instanceof Error ? erro.stack : undefined,
+      );
+      throw new InternalServerErrorException(
+        'Nao foi possivel obter os metadados do objeto no S3.',
+      );
+    }
+  }
+
+  async getObjectMetadata(
+    chave: string,
+    bucket = this.bucketPadrao,
+  ): Promise<MetadadosObjetoS3 | null> {
+    return this.obterMetadadosObjeto(chave, bucket);
+  }
+
   private normalizarChave(chave: string): string {
     const chaveNormalizada = chave.trim().replace(/^\/+/, '');
 
@@ -314,6 +361,21 @@ export class ServicoS3 {
       tipo: 'AES256',
     };
   }
-}
 
-export { ServicoS3 as S3Service };
+  private ehObjetoNaoEncontrado(erro: unknown): boolean {
+    if (!(erro instanceof Error)) {
+      return false;
+    }
+
+    const erroComCodigo = erro as Error & {
+      $metadata?: { httpStatusCode?: number };
+      name?: string;
+    };
+
+    return (
+      erroComCodigo.$metadata?.httpStatusCode === 404 ||
+      erroComCodigo.name === 'NotFound' ||
+      erroComCodigo.name === 'NoSuchKey'
+    );
+  }
+}

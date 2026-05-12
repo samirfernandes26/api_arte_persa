@@ -15,11 +15,11 @@ import {
   limparFilas,
 } from '../apoio/limpeza-integracao';
 import { PerfilUsuario } from '../../../src/comum/enums/perfil-usuario.enum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ServicoPrisma } from '../../../src/prisma/prisma.service';
 
 describe('Integracao - Autenticacao', () => {
   let app: NestExpressApplication;
-  let prisma: PrismaService;
+  let prisma: ServicoPrisma;
 
   beforeAll(async () => {
     const contexto = await criarAplicacaoIntegracao();
@@ -40,22 +40,22 @@ describe('Integracao - Autenticacao', () => {
     await aguardarFilasOciosas(app);
   });
 
-  it('realiza o fluxo completo de login e refresh token', async () => {
+  it('realiza o fluxo completo de login e token de atualizacao', async () => {
     const { credenciais } = await criarPrimeiroMaster(app);
 
     const login = await autenticar(app, credenciais.email, credenciais.senha);
-    expect(login.access_token).toBeTruthy();
-    expect(login.refresh_token).toBeTruthy();
+    expect(login.token_acesso).toBeTruthy();
+    expect(login.token_atualizacao).toBeTruthy();
     expect(login.usuario.email).toBe(credenciais.email);
 
     const refresh = await request(app.getHttpServer())
-      .post('/api/autenticacao/refresh')
-      .send({ refresh_token: login.refresh_token })
+      .post('/api/autenticacao/renovar-token')
+      .send({ token_atualizacao: login.token_atualizacao })
       .expect(201);
 
-    expect(refresh.body.access_token).toBeTruthy();
-    expect(refresh.body.refresh_token).toBeTruthy();
-    expect(refresh.body.refresh_token).not.toBe(login.refresh_token);
+    expect(refresh.body.token_acesso).toBeTruthy();
+    expect(refresh.body.token_atualizacao).toBeTruthy();
+    expect(refresh.body.token_atualizacao).not.toBe(login.token_atualizacao);
   });
 
   it('nao expone senha_hash na resposta de criacao do primeiro master', async () => {
@@ -84,7 +84,7 @@ describe('Integracao - Autenticacao', () => {
 
     const funcionario = await criarUsuarioAutenticado(
       app,
-      loginMaster.access_token,
+      loginMaster.token_acesso,
       {
         perfil: PerfilUsuario.FUNCIONARIO,
       },
@@ -98,7 +98,7 @@ describe('Integracao - Autenticacao', () => {
 
     await request(app.getHttpServer())
       .get('/api/usuarios')
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .expect(403);
   });
 });

@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import Redis from 'ioredis';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ServicoPrisma } from '../../../src/prisma/prisma.service';
 import {
   CONEXAO_REDIS,
   FILA_IMAGEM,
@@ -13,6 +13,7 @@ import { esperar } from './esperas';
 const tabelas = [
   'imagens_observacao',
   'observacoes',
+  'intencoes_upload',
   'historicos_status_ordem_servico',
   'servicos_executados_item',
   'imagens_ordem_servico',
@@ -106,7 +107,7 @@ export async function limparFilas(app?: INestApplication) {
   await redis.flushdb();
 }
 
-export async function limparBanco(prisma: PrismaService) {
+export async function limparBanco(prisma: ServicoPrisma) {
   await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0');
   for (const tabela of tabelas) {
     await prisma.$executeRawUnsafe(`DELETE FROM \`${tabela}\``);

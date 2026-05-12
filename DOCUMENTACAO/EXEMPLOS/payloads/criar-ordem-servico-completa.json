@@ -37,8 +37,6 @@
       "valor_declarado": 18000,
       "estado_atual": "Leves manchas de vinho nas extremidades.",
       "cuidados_especiais": "Nao dobrar durante transporte.",
-      "chave_foto_inicial": "ordens/ordem-temp/itens/item-temp/foto-inicial-tapete.jpg",
-      "url_foto_inicial": "https://empresa-tapetes-persas.s3.us-east-1.amazonaws.com/ordens/ordem-temp/itens/item-temp/foto-inicial-tapete.jpg",
       "servicos_executados": [
         {
           "servico_catalogo_id": "2db6c5ff-1c72-4aa3-a1e2-cd685ece2fd1",

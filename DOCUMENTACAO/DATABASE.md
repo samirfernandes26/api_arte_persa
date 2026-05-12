@@ -48,12 +48,12 @@ Quase todas as tabelas compartilham o seguinte contrato:
 | Tabela | Papel |
 | --- | --- |
 | `usuarios` | Cadastro de usuarios com perfil de acesso |
-| `tokens_refresh` | Persistencia de refresh tokens rotativos |
+| `tokens_atualizacao` | Persistencia de token de atualizacaos rotativos |
 
 Observacoes:
 
 - `usuarios.email` e unico
-- `tokens_refresh` guarda hash do refresh token, familia, origem e expiracao
+- `tokens_atualizacao` guarda hash do token de atualizacao, familia, origem e expiracao
 
 ### 2. Clientes
 

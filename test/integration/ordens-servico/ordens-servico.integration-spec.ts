@@ -18,11 +18,11 @@ import { criarPayloadCliente } from '../factories/cliente.factory';
 import { criarPayloadOrdemServico } from '../factories/ordem-servico.factory';
 import { criarPayloadServico } from '../factories/servico.factory';
 import { PerfilUsuario } from '../../../src/comum/enums/perfil-usuario.enum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ServicoPrisma } from '../../../src/prisma/prisma.service';
 
 describe('Integracao - Ordens de Servico', () => {
   let app: NestExpressApplication;
-  let prisma: PrismaService;
+  let prisma: ServicoPrisma;
 
   beforeAll(async () => {
     const contexto = await criarAplicacaoIntegracao();
@@ -48,7 +48,7 @@ describe('Integracao - Ordens de Servico', () => {
     const loginMaster = await autenticar(app, credenciais.email, credenciais.senha);
     const funcionario = await criarUsuarioAutenticado(
       app,
-      loginMaster.access_token,
+      loginMaster.token_acesso,
       { perfil: PerfilUsuario.FUNCIONARIO },
     );
     const loginFuncionario = await autenticar(
@@ -59,13 +59,13 @@ describe('Integracao - Ordens de Servico', () => {
 
     const servico = await request(app.getHttpServer())
       .post('/api/servicos')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadServico({ preco_base: 800 }))
       .expect(201);
 
     const cliente = await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadCliente())
       .expect(201);
 
@@ -78,7 +78,7 @@ describe('Integracao - Ordens de Servico', () => {
 
     const ordem = await request(app.getHttpServer())
       .post('/api/ordens-servico')
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .send(payloadOrdem)
       .expect(201);
 
@@ -99,7 +99,7 @@ describe('Integracao - Ordens de Servico', () => {
 
     await request(app.getHttpServer())
       .post('/api/observacoes')
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .send({
         tipo_alvo: 'ordem_servico',
         ordem_servico_id: ordem.body.id,
@@ -111,13 +111,13 @@ describe('Integracao - Ordens de Servico', () => {
 
     await request(app.getHttpServer())
       .patch(`/api/servicos/${servico.body.id}`)
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send({ preco_base: 1200 })
       .expect(200);
 
     const ordemAtualizada = await request(app.getHttpServer())
       .get(`/api/ordens-servico/${ordem.body.id}`)
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .expect(200);
 
     expect(ordemAtualizada.body.itens[0].servicos_executados[0].valor_unitario_snapshot).toBe(
@@ -132,7 +132,7 @@ describe('Integracao - Ordens de Servico', () => {
     const loginMaster = await autenticar(app, credenciais.email, credenciais.senha);
     const funcionario = await criarUsuarioAutenticado(
       app,
-      loginMaster.access_token,
+      loginMaster.token_acesso,
       { perfil: PerfilUsuario.FUNCIONARIO },
     );
     const loginFuncionario = await autenticar(
@@ -143,13 +143,13 @@ describe('Integracao - Ordens de Servico', () => {
 
     const servico = await request(app.getHttpServer())
       .post('/api/servicos')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadServico({ preco_base: 800 }))
       .expect(201);
 
     const cliente = await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadCliente())
       .expect(201);
 
@@ -162,7 +162,7 @@ describe('Integracao - Ordens de Servico', () => {
 
     await request(app.getHttpServer())
       .post('/api/ordens-servico')
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .send(payloadOrdem)
       .expect(403);
   });
@@ -172,12 +172,12 @@ describe('Integracao - Ordens de Servico', () => {
     const loginMaster = await autenticar(app, credenciais.email, credenciais.senha);
     const supervisor = await criarUsuarioAutenticado(
       app,
-      loginMaster.access_token,
+      loginMaster.token_acesso,
       { perfil: PerfilUsuario.SUPERVISOR },
     );
     const funcionario = await criarUsuarioAutenticado(
       app,
-      loginMaster.access_token,
+      loginMaster.token_acesso,
       { perfil: PerfilUsuario.FUNCIONARIO },
     );
     const loginFuncionario = await autenticar(
@@ -188,13 +188,13 @@ describe('Integracao - Ordens de Servico', () => {
 
     const servico = await request(app.getHttpServer())
       .post('/api/servicos')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadServico({ preco_base: 800 }))
       .expect(201);
 
     const cliente = await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadCliente())
       .expect(201);
 
@@ -208,19 +208,19 @@ describe('Integracao - Ordens de Servico', () => {
 
     const ordem = await request(app.getHttpServer())
       .post('/api/ordens-servico')
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .send(payloadOrdem)
       .expect(201);
 
     await request(app.getHttpServer())
       .patch(`/api/ordens-servico/${ordem.body.id}/status`)
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .send({ status: 'aguardando_coleta', motivo: 'Coleta agendada.' })
       .expect(200);
 
     const respostaStatus = await request(app.getHttpServer())
       .patch(`/api/ordens-servico/${ordem.body.id}/status`)
-      .set('Authorization', `Bearer ${loginFuncionario.access_token}`)
+      .set('Authorization', `Bearer ${loginFuncionario.token_acesso}`)
       .send({ status: 'coletada', motivo: 'Item coletado no cliente.' })
       .expect(200);
 
@@ -240,19 +240,19 @@ describe('Integracao - Ordens de Servico', () => {
 
     const servico = await request(app.getHttpServer())
       .post('/api/servicos')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadServico({ preco_base: 800 }))
       .expect(201);
 
     const cliente = await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadCliente())
       .expect(201);
 
     const ordem = await request(app.getHttpServer())
       .post('/api/ordens-servico')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(
         criarPayloadOrdemServico({
           clienteId: cliente.body.id,
@@ -266,7 +266,7 @@ describe('Integracao - Ordens de Servico', () => {
 
     await request(app.getHttpServer())
       .patch(`/api/ordens-servico/${ordem.body.id}`)
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send({
         percentual_desconto: 5,
       })

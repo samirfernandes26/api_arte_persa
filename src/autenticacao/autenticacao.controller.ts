@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { Publico } from '../comum/decoradores/publico.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import { RequisicaoAutenticada } from '../comum/interfaces/requisicao-autenticada.interface';
-import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { EntrarDto } from './dto/login.dto';
+import { TokenAtualizacaoDto } from './dto/refresh-token.dto';
 import { AutenticacaoService } from './autenticacao.service';
 
 @Controller('autenticacao')
@@ -12,34 +12,34 @@ export class AutenticacaoController {
   constructor(private readonly autenticacaoService: AutenticacaoService) {}
 
   @Publico()
-  @Post('login')
-  login(@Body() dto: LoginDto, @Req() requisicao: RequisicaoAutenticada) {
-    return this.autenticacaoService.login(dto, {
+  @Post('entrar')
+  entrar(@Body() dto: EntrarDto, @Req() requisicao: RequisicaoAutenticada) {
+    return this.autenticacaoService.entrar(dto, {
       ip: requisicao.ip,
-      userAgent: requisicao.headers['user-agent'],
+      agenteUsuario: requisicao.headers['user-agent'],
     });
   }
 
   @Publico()
-  @Post('refresh')
-  refresh(
-    @Body() dto: RefreshTokenDto,
+  @Post('renovar-token')
+  renovarToken(
+    @Body() dto: TokenAtualizacaoDto,
     @Req() requisicao: RequisicaoAutenticada,
   ) {
-    return this.autenticacaoService.refresh(dto, {
+    return this.autenticacaoService.renovarToken(dto, {
       ip: requisicao.ip,
-      userAgent: requisicao.headers['user-agent'],
+      agenteUsuario: requisicao.headers['user-agent'],
     });
   }
 
   @Publico()
-  @Post('logout')
-  logout(@Body() dto: RefreshTokenDto) {
-    return this.autenticacaoService.logout(dto);
+  @Post('sair')
+  sair(@Body() dto: TokenAtualizacaoDto) {
+    return this.autenticacaoService.sair(dto);
   }
 
   @Get('eu')
-  eu(@UsuarioAtual() usuarioAtual: PayloadToken) {
+  eu(@UsuarioAtual() usuarioAtual: PayloadAutenticacao) {
     return this.autenticacaoService.obterUsuarioAutenticado(usuarioAtual.sub);
   }
 }

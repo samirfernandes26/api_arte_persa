@@ -51,7 +51,7 @@ Arquivos:
 
 | Suite | Cobertura |
 | --- | --- |
-| `autenticacao.integration-spec.ts` | login, refresh token, 401 e 403 |
+| `autenticacao.integration-spec.ts` | login, token de atualizacao, 401 e 403 |
 | `clientes.integration-spec.ts` | criacao aninhada, validacao e busca |
 | `ordens-servico.integration-spec.ts` | criacao completa, desconto, historico e congelamento de preco |
 | `uploads.integration-spec.ts` | presigned URL e confirmacao de upload |

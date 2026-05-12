@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import { serializarDto, serializarListaDto } from '../comum/utilitarios/serializacao.util';
 import { AdicionarObservacaoDto } from './dto/adicionar-observacao.dto';
 import { ObservacaoResponseDto } from './dto/observacao-response.dto';
@@ -20,7 +20,7 @@ export class ObservacoesController {
   @Post()
   async adicionar(
     @Body() dto: AdicionarObservacaoDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       ObservacaoResponseDto,

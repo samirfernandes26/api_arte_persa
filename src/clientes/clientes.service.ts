@@ -5,7 +5,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { normalizarDocumento } from '../comum/utilitarios/documento.util';
 import { KmsService } from '../kms/kms.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { ServicoPrisma } from '../prisma/prisma.service';
 import { PaginacaoConsultaDto } from '../comum/dto/paginacao-consulta.dto';
 import { CriarClienteDto } from './dto/criar-cliente.dto';
 import { AtualizarClienteDto } from './dto/atualizar-cliente.dto';
@@ -13,7 +13,7 @@ import { AtualizarClienteDto } from './dto/atualizar-cliente.dto';
 @Injectable()
 export class ClientesService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly prisma: ServicoPrisma,
     private readonly kmsService: KmsService,
   ) {}
 
@@ -21,6 +21,8 @@ export class ClientesService {
     const contatosCriptografados = dto.contatos?.length
       ? await Promise.all(
           dto.contatos.map(async (contato) => ({
+            criado_por_id: usuarioId,
+            atualizado_por_id: usuarioId,
             nome: contato.nome,
             setor: contato.setor,
             cargo: contato.cargo,
@@ -74,6 +76,8 @@ export class ClientesService {
         enderecos: dto.enderecos?.length
           ? {
               create: dto.enderecos.map((endereco) => ({
+                criado_por_id: usuarioId,
+                atualizado_por_id: usuarioId,
                 tipo_endereco: endereco.tipo_endereco,
                 rotulo: endereco.rotulo,
                 destinatario: endereco.destinatario,
@@ -181,14 +185,22 @@ export class ClientesService {
       if (dto.contatos) {
         await transacao.contatoCliente.updateMany({
           where: { cliente_id: id, ativo: true, data_exclusao: null },
-          data: { ativo: false, data_exclusao: new Date() },
+          data: {
+            ativo: false,
+            data_exclusao: new Date(),
+            atualizado_por_id: usuarioId,
+          },
         });
       }
 
       if (dto.enderecos) {
         await transacao.enderecoCliente.updateMany({
           where: { cliente_id: id, ativo: true, data_exclusao: null },
-          data: { ativo: false, data_exclusao: new Date() },
+          data: {
+            ativo: false,
+            data_exclusao: new Date(),
+            atualizado_por_id: usuarioId,
+          },
         });
       }
 
@@ -237,12 +249,18 @@ export class ClientesService {
           atualizado_por_id: usuarioId,
           contatos: dto.contatos
             ? {
-                create: contatosCriptografados,
+                create: contatosCriptografados?.map((contato) => ({
+                  ...contato,
+                  criado_por_id: usuarioId,
+                  atualizado_por_id: usuarioId,
+                })),
               }
             : undefined,
           enderecos: dto.enderecos
             ? {
                 create: dto.enderecos.map((endereco) => ({
+                  criado_por_id: usuarioId,
+                  atualizado_por_id: usuarioId,
                   tipo_endereco: endereco.tipo_endereco,
                   rotulo: endereco.rotulo,
                   destinatario: endereco.destinatario,

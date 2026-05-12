@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { Job, Worker } from 'bullmq';
 import Redis from 'ioredis';
-import { PrismaService } from '../prisma/prisma.service';
-import { S3Service } from '../s3/s3.service';
+import { ServicoPrisma } from '../prisma/prisma.service';
+import { ServicoS3 } from '../s3/s3.service';
 import { NOME_FILA_PDF } from '../filas/constantes-fila';
 import { CONEXAO_REDIS } from '../filas/tokens-fila';
 import {
@@ -24,8 +24,8 @@ export class ProcessadorPdf implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
-    private readonly s3Service: S3Service,
+    private readonly prisma: ServicoPrisma,
+    private readonly s3Service: ServicoS3,
     @Inject(CONEXAO_REDIS)
     private readonly conexaoRedis: Redis,
   ) {}

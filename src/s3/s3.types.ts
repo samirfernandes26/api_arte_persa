@@ -39,3 +39,12 @@ export interface ResultadoUrlPreAssinadaS3 {
   criptografia_servidor?: TipoCriptografiaServidorS3;
   kms_key_id?: string;
 }
+
+export interface MetadadosObjetoS3 {
+  bucket: string;
+  chave: string;
+  tipo_conteudo?: string;
+  tamanho_bytes?: number;
+  etag?: string;
+  metadados: Record<string, string>;
+}

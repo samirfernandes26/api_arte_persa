@@ -34,10 +34,6 @@ export class GerarUrlPreAssinadaDto {
 
   @IsOptional()
   @IsUUID()
-  observacao_id?: string;
-
-  @IsOptional()
-  @IsUUID()
   cliente_id?: string;
 
   @IsOptional()

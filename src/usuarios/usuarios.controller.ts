@@ -3,7 +3,7 @@ import { Publico } from '../comum/decoradores/publico.decorator';
 import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import {
   serializarDto,
   serializarListaDto,
@@ -33,7 +33,7 @@ export class UsuariosController {
   @Post()
   async criar(
     @Body() dto: CriarUsuarioDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       UsuarioResponseDto,
@@ -58,7 +58,7 @@ export class UsuariosController {
   async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarUsuarioDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       UsuarioResponseDto,

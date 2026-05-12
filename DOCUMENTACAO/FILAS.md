@@ -154,7 +154,7 @@ Configuracao: [src/filas/configurar-painel-filas.ts](../src/filas/configurar-pai
 
 ### Autorizacao
 
-- exige header `Authorization: Bearer <access_token>`
+- exige header `Authorization: Bearer <token_acesso>`
 - perfis permitidos por padrao: `supervisor`, `master`
 - configuravel por `PERFIS_BULL_BOARD`
 

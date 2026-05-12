@@ -36,7 +36,7 @@ A aplicacao foi estruturada com:
 | ORM | Prisma |
 | Cache e filas | Redis + BullMQ |
 | Armazenamento de arquivos | AWS S3 |
-| Seguranca | JWT, refresh token, guards por perfil |
+| Seguranca | JWT, token de atualizacao, guards por perfil |
 | Validacao | class-validator, class-transformer, Zod |
 | Testes | Jest, Supertest, Testcontainers |
 
@@ -116,8 +116,9 @@ docker compose up --build
 O container da aplicacao executa automaticamente:
 
 1. `npm run prisma:generate`
-2. `npx prisma db push`
-3. `npm run start:dev`
+2. `npm run start:dev`
+
+Antes de usar a API pela primeira vez, aplique o schema no banco manualmente.
 
 ### Ambiente com phpMyAdmin
 
@@ -141,7 +142,9 @@ Servicos disponiveis:
 npm run prisma:generate
 ```
 
-### Sincronizar schema no banco
+### Aplicar schema no banco pela primeira vez
+
+Enquanto a base ainda nao possui historico versionado de migrations, use:
 
 ```bash
 npm run prisma:push
@@ -173,9 +176,10 @@ npm run start:dev
 ## Fluxo inicial recomendado
 
 1. Suba a infraestrutura com `docker compose up --build`
-2. Crie o primeiro usuario master com `POST /api/usuarios/primeiro-master`
-3. Faça login em `POST /api/autenticacao/login`
-4. Cadastre servicos, clientes e ordens de servico
+2. Aplique o schema com `npm run prisma:push` ou rode a migration apropriada
+3. Crie o primeiro usuario master com `POST /api/usuarios/primeiro-master`
+4. Faça login em `POST /api/autenticacao/entrar`
+5. Cadastre servicos, clientes e ordens de servico
 
 ## Autenticacao e niveis de acesso
 
@@ -189,12 +193,12 @@ npm run start:dev
 
 ### Regras gerais
 
-- Quase todas as rotas exigem `Authorization: Bearer <access_token>`
+- Quase todas as rotas exigem `Authorization: Bearer <token_acesso>`
 - Rotas publicas:
   - `POST /api/usuarios/primeiro-master`
-  - `POST /api/autenticacao/login`
-  - `POST /api/autenticacao/refresh`
-  - `POST /api/autenticacao/logout`
+  - `POST /api/autenticacao/entrar`
+  - `POST /api/autenticacao/renovar-token`
+  - `POST /api/autenticacao/sair`
 - O Bull Board tambem e protegido por JWT de acesso
 
 ## Regras de negocio importantes
@@ -251,7 +255,15 @@ O frontend deve:
 
 1. pedir uma URL pre-assinada em `POST /api/uploads/url-pre-assinada`
 2. fazer `PUT` direto no S3
-3. confirmar o upload em uma rota de confirmacao apropriada
+3. confirmar o upload em uma rota de confirmacao apropriada ou no modulo de dominio correspondente
+
+Toda URL pre-assinada gera uma `intencao_upload` persistida no banco. A confirmacao valida:
+
+- prefixo da chave
+- entidade dona do upload
+- existencia real do objeto no S3
+- tipo MIME
+- tamanho do arquivo, quando informado
 
 Pastas principais no bucket:
 

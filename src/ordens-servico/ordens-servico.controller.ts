@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common
 import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import {
   serializarDto,
   serializarListaDto,
@@ -29,7 +29,7 @@ export class OrdensServicoController {
   @Post()
   async criar(
     @Body() dto: CriarOrdemServicoDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       OrdemServicoResponseDto,
@@ -72,7 +72,7 @@ export class OrdensServicoController {
   async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarOrdemServicoDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       OrdemServicoResponseDto,
@@ -89,7 +89,7 @@ export class OrdensServicoController {
   async atualizarStatus(
     @Param('id') id: string,
     @Body() dto: AtualizarStatusOrdemServicoDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       OrdemServicoResponseDto,

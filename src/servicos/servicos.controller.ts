@@ -3,9 +3,11 @@ import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PaginacaoConsultaDto } from '../comum/dto/paginacao-consulta.dto';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
+import { serializarDto, serializarListaDto } from '../comum/utilitarios/serializacao.util';
 import { AtualizarServicoDto } from './dto/atualizar-servico.dto';
 import { CriarServicoDto } from './dto/criar-servico.dto';
+import { ServicoResponseDto, ServicoResumoResponseDto } from './dto/servico-response.dto';
 import { ServicosService } from './servicos.service';
 
 @Controller('servicos')
@@ -14,8 +16,11 @@ export class ServicosController {
 
   @Perfis(PerfilUsuario.SUPERVISOR, PerfilUsuario.MASTER)
   @Post()
-  criar(@Body() dto: CriarServicoDto, @UsuarioAtual() usuarioAtual: PayloadToken) {
-    return this.servicosService.criar(dto, usuarioAtual.sub);
+  async criar(@Body() dto: CriarServicoDto, @UsuarioAtual() usuarioAtual: PayloadAutenticacao) {
+    return serializarDto(
+      ServicoResponseDto,
+      await this.servicosService.criar(dto, usuarioAtual.sub),
+    );
   }
 
   @Perfis(
@@ -24,8 +29,11 @@ export class ServicosController {
     PerfilUsuario.MASTER,
   )
   @Get()
-  listar(@Query() consulta: PaginacaoConsultaDto) {
-    return this.servicosService.listar(consulta);
+  async listar(@Query() consulta: PaginacaoConsultaDto) {
+    return serializarListaDto(
+      ServicoResumoResponseDto,
+      await this.servicosService.listar(consulta),
+    );
   }
 
   @Perfis(
@@ -34,17 +42,23 @@ export class ServicosController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.servicosService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    return serializarDto(
+      ServicoResponseDto,
+      await this.servicosService.buscarPorId(id),
+    );
   }
 
   @Perfis(PerfilUsuario.SUPERVISOR, PerfilUsuario.MASTER)
   @Patch(':id')
-  atualizar(
+  async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarServicoDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
-    return this.servicosService.atualizar(id, dto, usuarioAtual.sub);
+    return serializarDto(
+      ServicoResponseDto,
+      await this.servicosService.atualizar(id, dto, usuarioAtual.sub),
+    );
   }
 }

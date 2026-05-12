@@ -7,32 +7,32 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { PerfilUsuario, TokenRefresh, Usuario } from '@prisma/client';
 import { compare, hash } from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import ms from 'ms';
 import { StringValue } from 'ms';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PerfilUsuario, TokenRefresh, Usuario } from '.prisma/client';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import { serializarDto } from '../comum/utilitarios/serializacao.util';
-import { PrismaService } from '../prisma/prisma.service';
+import { ServicoPrisma } from '../prisma/prisma.service';
 import { UsuariosService } from '../usuarios/usuarios.service';
 import { UsuarioResponseDto } from '../usuarios/dto/usuario-response.dto';
-import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { EntrarDto } from './dto/login.dto';
+import { TokenAtualizacaoDto } from './dto/refresh-token.dto';
 import { RespostaAutenticacaoDto } from './dto/resposta-autenticacao.dto';
 
 @Injectable()
 export class AutenticacaoService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly prisma: ServicoPrisma,
     private readonly usuariosService: UsuariosService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
-  async login(
-    dto: LoginDto,
-    contexto: { ip?: string; userAgent?: string },
+  async entrar(
+    dto: EntrarDto,
+    contexto: { ip?: string; agenteUsuario?: string },
   ) {
     const usuario = await this.usuariosService.buscarPorEmail(dto.email);
 
@@ -56,48 +56,79 @@ export class AutenticacaoService {
     return emissao;
   }
 
-  async refresh(
-    dto: RefreshTokenDto,
-    contexto: { ip?: string; userAgent?: string },
-  ) {
-    let payload: PayloadToken;
+  async sair(dto: TokenAtualizacaoDto): Promise<{ mensagem: string }> {
     try {
-      payload = await this.jwtService.verifyAsync<PayloadToken>(dto.refresh_token, {
+      const payload = await this.jwtService.verifyAsync<PayloadAutenticacao>(
+        dto.token_atualizacao,
+        {
+          secret: this.configService.getOrThrow<string>('JWT_SEGREDO_REFRESH'),
+          issuer: this.configService.get<string>('JWT_EMISSOR') || undefined,
+          audience: this.configService.get<string>('JWT_AUDIENCIA') || undefined,
+        },
+      );
+
+      if (payload.token_atualizacao_id) {
+        await this.revogarTokenAtualizacao(payload.token_atualizacao_id);
+      }
+    } catch {
+      return { mensagem: 'Saida concluida.' };
+    }
+
+    return { mensagem: 'Saida concluida.' };
+  }
+
+  async obterUsuarioAutenticado(usuarioId: string) {
+    const usuario = await this.usuariosService.buscarPorId(usuarioId);
+    return serializarDto(UsuarioResponseDto, usuario);
+  }
+
+  async renovarToken(
+    dto: TokenAtualizacaoDto,
+    contexto: { ip?: string; agenteUsuario?: string },
+  ) {
+    let payload: PayloadAutenticacao;
+    try {
+      payload = await this.jwtService.verifyAsync<PayloadAutenticacao>(dto.token_atualizacao, {
         secret: this.configService.getOrThrow<string>('JWT_SEGREDO_REFRESH'),
         issuer: this.configService.get<string>('JWT_EMISSOR') || undefined,
         audience: this.configService.get<string>('JWT_AUDIENCIA') || undefined,
       });
     } catch {
-      throw new UnauthorizedException('Refresh token invalido ou expirado.');
+      throw new UnauthorizedException('Token de atualizacao invalido ou expirado.');
     }
 
-    if (payload.tipo !== 'refresh' || !payload.token_refresh_id) {
-      throw new UnauthorizedException('Token informado nao e um refresh token.');
+    if (payload.tipo !== 'refresh' || !payload.token_atualizacao_id) {
+      throw new UnauthorizedException(
+        'Token informado nao e um token de atualizacao.',
+      );
     }
 
     const tokenPersistido = await this.prisma.tokenRefresh.findUnique({
-      where: { id: payload.token_refresh_id },
+      where: { id: payload.token_atualizacao_id },
       include: { usuario: true },
     });
 
     if (!tokenPersistido || !tokenPersistido.ativo || tokenPersistido.revogado_em) {
-      throw new UnauthorizedException('Refresh token revogado ou inexistente.');
+      throw new UnauthorizedException('Token de atualizacao revogado ou inexistente.');
     }
 
     if (tokenPersistido.expira_em.getTime() <= Date.now()) {
-      throw new UnauthorizedException('Refresh token expirado.');
+      throw new UnauthorizedException('Token de atualizacao expirado.');
     }
 
-    const hashConfere = await compare(dto.refresh_token, tokenPersistido.hash_token);
+    const hashConfere = await compare(
+      dto.token_atualizacao,
+      tokenPersistido.hash_token,
+    );
     if (!hashConfere) {
-      throw new UnauthorizedException('Refresh token invalido.');
+      throw new UnauthorizedException('Token de atualizacao invalido.');
     }
 
     if (!tokenPersistido.usuario.ativo || tokenPersistido.usuario.data_exclusao) {
       throw new ForbiddenException('Usuario inativo.');
     }
 
-    await this.revogarTokenRefresh(tokenPersistido.id);
+    await this.revogarTokenAtualizacao(tokenPersistido.id);
 
     return this.gerarParTokens(
       tokenPersistido.usuario,
@@ -106,55 +137,32 @@ export class AutenticacaoService {
     );
   }
 
-  async logout(dto: RefreshTokenDto): Promise<{ mensagem: string }> {
-    try {
-      const payload = await this.jwtService.verifyAsync<PayloadToken>(dto.refresh_token, {
-        secret: this.configService.getOrThrow<string>('JWT_SEGREDO_REFRESH'),
-        issuer: this.configService.get<string>('JWT_EMISSOR') || undefined,
-        audience: this.configService.get<string>('JWT_AUDIENCIA') || undefined,
-      });
-
-      if (payload.token_refresh_id) {
-        await this.revogarTokenRefresh(payload.token_refresh_id);
-      }
-    } catch {
-      return { mensagem: 'Logout concluido.' };
-    }
-
-    return { mensagem: 'Logout concluido.' };
-  }
-
-  async obterUsuarioAutenticado(usuarioId: string) {
-    const usuario = await this.usuariosService.buscarPorId(usuarioId);
-    return serializarDto(UsuarioResponseDto, usuario);
-  }
-
   private async gerarParTokens(
     usuario: Usuario,
     familiaToken: string,
-    contexto: { ip?: string; userAgent?: string },
+    contexto: { ip?: string; agenteUsuario?: string },
   ) {
-    const tokenRefreshPersistido = await this.criarTokenRefreshPersistido(
+    const tokenAtualizacaoPersistido = await this.criarTokenAtualizacaoPersistido(
       usuario.id,
       familiaToken,
       contexto,
     );
 
-    const payloadAcesso: PayloadToken = {
+    const payloadAcesso: PayloadAutenticacao = {
       sub: usuario.id,
       email: usuario.email,
       perfil: usuario.perfil as PerfilUsuario,
       tipo: 'acesso',
     };
 
-    const payloadRefresh: PayloadToken = {
+    const payloadRefresh: PayloadAutenticacao = {
       ...payloadAcesso,
       tipo: 'refresh',
       familia_token: familiaToken,
-      token_refresh_id: tokenRefreshPersistido.id,
+      token_atualizacao_id: tokenAtualizacaoPersistido.id,
     };
 
-    const accessToken = await this.jwtService.signAsync(payloadAcesso, {
+    const tokenAcesso = await this.jwtService.signAsync(payloadAcesso, {
       secret: this.configService.getOrThrow<string>('JWT_SEGREDO_ACESSO'),
       expiresIn: this.configService.get<string>(
         'JWT_TEMPO_ACESSO',
@@ -164,7 +172,7 @@ export class AutenticacaoService {
       audience: this.configService.get<string>('JWT_AUDIENCIA') || undefined,
     });
 
-    const refreshToken = await this.jwtService.signAsync(payloadRefresh, {
+    const tokenAtualizacao = await this.jwtService.signAsync(payloadRefresh, {
       secret: this.configService.getOrThrow<string>('JWT_SEGREDO_REFRESH'),
       expiresIn: this.configService.get<string>(
         'JWT_TEMPO_REFRESH',
@@ -174,19 +182,22 @@ export class AutenticacaoService {
       audience: this.configService.get<string>('JWT_AUDIENCIA') || undefined,
     });
 
-    await this.atualizarHashTokenRefresh(tokenRefreshPersistido, refreshToken);
+    await this.atualizarHashTokenAtualizacao(
+      tokenAtualizacaoPersistido,
+      tokenAtualizacao,
+    );
 
     return serializarDto(RespostaAutenticacaoDto, {
       usuario,
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      token_acesso: tokenAcesso,
+      token_atualizacao: tokenAtualizacao,
     });
   }
 
-  private async criarTokenRefreshPersistido(
+  private async criarTokenAtualizacaoPersistido(
     usuarioId: string,
     familiaToken: string,
-    contexto: { ip?: string; userAgent?: string },
+    contexto: { ip?: string; agenteUsuario?: string },
   ): Promise<TokenRefresh> {
     const tempoRefresh = this.configService.get<string>(
       'JWT_TEMPO_REFRESH',
@@ -196,7 +207,7 @@ export class AutenticacaoService {
 
     if (typeof intervaloMs !== 'number') {
       throw new InternalServerErrorException(
-        'Nao foi possivel interpretar o tempo de expiracao do refresh token.',
+        'Nao foi possivel interpretar o tempo de expiracao do token de atualizacao.',
       );
     }
 
@@ -209,28 +220,30 @@ export class AutenticacaoService {
         familia_token: familiaToken,
         expira_em: expiraEm,
         ip_origem: contexto.ip,
-        user_agent: contexto.userAgent,
+        agente_usuario: contexto.agenteUsuario,
       },
     });
   }
 
-  private async atualizarHashTokenRefresh(
+  private async atualizarHashTokenAtualizacao(
     tokenPersistido: TokenRefresh,
-    refreshToken: string,
+    tokenAtualizacao: string,
   ): Promise<void> {
     const rodadas = this.configService.get<number>('RODADAS_HASH_SENHA', 10);
     await this.prisma.tokenRefresh.update({
       where: { id: tokenPersistido.id },
       data: {
-        hash_token: await hash(refreshToken, rodadas),
+        hash_token: await hash(tokenAtualizacao, rodadas),
       },
     });
   }
 
-  private async revogarTokenRefresh(tokenId: string): Promise<void> {
-    const token = await this.prisma.tokenRefresh.findUnique({ where: { id: tokenId } });
+  private async revogarTokenAtualizacao(tokenId: string): Promise<void> {
+    const token = await this.prisma.tokenRefresh.findUnique({
+      where: { id: tokenId },
+    });
     if (!token) {
-      throw new NotFoundException('Refresh token nao encontrado.');
+      throw new NotFoundException('Token de atualizacao nao encontrado.');
     }
 
     await this.prisma.tokenRefresh.update({

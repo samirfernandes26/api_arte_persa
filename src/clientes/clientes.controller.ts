@@ -3,7 +3,7 @@ import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PaginacaoConsultaDto } from '../comum/dto/paginacao-consulta.dto';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import {
   serializarDto,
   serializarListaDto,
@@ -25,7 +25,7 @@ export class ClientesController {
   @Post()
   async criar(
     @Body() dto: CriarClienteDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       ClienteResponseDto,
@@ -65,7 +65,7 @@ export class ClientesController {
   async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarClienteDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
     return serializarDto(
       ClienteResponseDto,

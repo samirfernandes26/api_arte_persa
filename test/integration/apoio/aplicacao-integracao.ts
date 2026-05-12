@@ -10,13 +10,13 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { FiltroExcecaoGlobal } from '../../../src/comum/filtros/filtro-excecao-global';
 import { ModuloAplicacao } from '../../../src/modulo-aplicacao';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { S3Service } from '../../../src/s3/s3.service';
+import { ServicoPrisma } from '../../../src/prisma/prisma.service';
+import { ServicoS3 } from '../../../src/s3/s3.service';
 import { S3FalsoMemoria } from './s3-falso-memoria';
 
 export interface ContextoAplicacaoIntegracao {
   app: NestExpressApplication;
-  prisma: PrismaService;
+  prisma: ServicoPrisma;
   s3Falso: S3FalsoMemoria;
 }
 
@@ -25,7 +25,7 @@ export async function criarAplicacaoIntegracao(): Promise<ContextoAplicacaoInteg
   const modulo = await Test.createTestingModule({
     imports: [ModuloAplicacao],
   })
-    .overrideProvider(S3Service)
+    .overrideProvider(ServicoS3)
     .useValue(s3Falso)
     .compile();
 
@@ -63,7 +63,7 @@ export async function criarAplicacaoIntegracao(): Promise<ContextoAplicacaoInteg
 
   return {
     app,
-    prisma: app.get(PrismaService),
+    prisma: app.get(ServicoPrisma),
     s3Falso,
   };
 }

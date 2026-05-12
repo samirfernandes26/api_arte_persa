@@ -7,14 +7,14 @@ import {
 import { PerfilUsuario, Prisma, Usuario } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
+import { ServicoPrisma } from '../prisma/prisma.service';
 import { CriarUsuarioDto } from './dto/criar-usuario.dto';
 import { AtualizarUsuarioDto } from './dto/atualizar-usuario.dto';
 
 @Injectable()
 export class UsuariosService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly prisma: ServicoPrisma,
     private readonly configService: ConfigService,
   ) {}
 

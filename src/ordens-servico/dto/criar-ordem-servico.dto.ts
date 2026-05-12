@@ -111,14 +111,6 @@ export class CriarItemOrdemServicoDto {
   @IsString()
   cuidados_especiais?: string;
 
-  @IsOptional()
-  @IsString()
-  chave_foto_inicial?: string;
-
-  @IsOptional()
-  @IsString()
-  url_foto_inicial?: string;
-
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(15)

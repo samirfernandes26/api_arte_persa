@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, IsNumber, Min } from 'class-validator';
+import { IsOptional, IsString, IsNumber, Min, IsNotEmpty } from 'class-validator';
 
 export class AtualizarItemOrdemServicoDto {
   @IsOptional()
@@ -12,11 +12,8 @@ export class AtualizarItemOrdemServicoDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   chave_foto_inicial?: string;
-
-  @IsOptional()
-  @IsString()
-  url_foto_inicial?: string;
 
   @IsOptional()
   @Type(() => Number)

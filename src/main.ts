@@ -12,7 +12,7 @@ import helmet from 'helmet';
 import { FiltroExcecaoGlobal } from './comum/filtros/filtro-excecao-global';
 import { ModuloAplicacao } from './modulo-aplicacao';
 import { configurarPainelFilas } from './filas/configurar-painel-filas';
-import { PrismaService } from './prisma/prisma.service';
+import { ServicoPrisma } from './prisma/prisma.service';
 
 async function inicializar(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(ModuloAplicacao, {
@@ -20,7 +20,7 @@ async function inicializar(): Promise<void> {
   });
 
   const configService = app.get(ConfigService);
-  const prismaService = app.get(PrismaService);
+  const prismaService = app.get(ServicoPrisma);
   const jwtService = app.get(JwtService);
   const reflector = app.get(Reflector);
   const logger = new Logger('Inicializacao');

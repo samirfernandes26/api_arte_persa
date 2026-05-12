@@ -18,7 +18,7 @@ import { ConfigService } from '@nestjs/config';
 import { ClientesService } from '../clientes/clientes.service';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
 import { StatusOrdemServico } from '../comum/enums/status-ordem-servico.enum';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import { gerarCodigoExterno } from '../comum/utilitarios/codigo-externo.util';
 import {
   arredondarMoeda,
@@ -30,7 +30,7 @@ import { validarDescontoPorPerfil } from '../comum/utilitarios/desconto.util';
 import { validarTransicaoStatusOrdemServico } from '../comum/utilitarios/status-ordem-servico.util';
 import { FilasService } from '../filas/filas.service';
 import { KmsService } from '../kms/kms.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { ServicoPrisma } from '../prisma/prisma.service';
 import { AtualizarOrdemServicoDto } from './dto/atualizar-ordem-servico.dto';
 import { AtualizarStatusOrdemServicoDto } from './dto/atualizar-status-ordem-servico.dto';
 import { ConsultarOrdensServicoDto } from './dto/consultar-ordens-servico.dto';
@@ -64,8 +64,6 @@ interface ItemMontado {
   valor_declarado?: number;
   estado_atual?: string;
   cuidados_especiais?: string;
-  chave_foto_inicial?: string;
-  url_foto_inicial?: string;
   valor_unitario_base: Prisma.Decimal;
   valor_unitario_desconto: Prisma.Decimal;
   valor_unitario_final: Prisma.Decimal;
@@ -131,14 +129,14 @@ export class OrdensServicoService {
   private readonly logger = new Logger(OrdensServicoService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly prisma: ServicoPrisma,
     private readonly configService: ConfigService,
     private readonly clientesService: ClientesService,
     private readonly filasService: FilasService,
     private readonly kmsService: KmsService,
   ) {}
 
-  async criar(dto: CriarOrdemServicoDto, usuarioAtual: PayloadToken) {
+  async criar(dto: CriarOrdemServicoDto, usuarioAtual: PayloadAutenticacao) {
     const cliente = await this.clientesService.obterSnapshotCliente(dto.cliente_id);
     const itensMontados = await this.montarItens(dto.itens);
     const limites = this.obterLimitesDesconto();
@@ -276,7 +274,7 @@ export class OrdensServicoService {
   async atualizar(
     id: string,
     dto: AtualizarOrdemServicoDto,
-    usuarioAtual: PayloadToken,
+    usuarioAtual: PayloadAutenticacao,
   ) {
     if (dto.itens && dto.itens.length === 0) {
       throw new BadRequestException(
@@ -435,7 +433,7 @@ export class OrdensServicoService {
   async atualizarStatus(
     id: string,
     dto: AtualizarStatusOrdemServicoDto,
-    usuarioAtual: PayloadToken,
+    usuarioAtual: PayloadAutenticacao,
   ) {
     const ordem = await this.buscarPorId(id);
     validarTransicaoStatusOrdemServico(
@@ -568,8 +566,6 @@ export class OrdensServicoService {
       valor_declarado: item.valor_declarado,
       estado_atual: item.estado_atual,
       cuidados_especiais: item.cuidados_especiais,
-      chave_foto_inicial: item.chave_foto_inicial,
-      url_foto_inicial: item.url_foto_inicial,
       valor_unitario_base: dividirMoeda(valorTotalBruto, item.quantidade),
       valor_unitario_desconto: dividirMoeda(valorTotalDesconto, item.quantidade),
       valor_unitario_final: dividirMoeda(valorTotalFinal, item.quantidade),
@@ -648,8 +644,6 @@ export class OrdensServicoService {
       valor_declarado: item.valor_declarado ? Number(item.valor_declarado) : undefined,
       estado_atual: item.estado_atual ?? undefined,
       cuidados_especiais: item.cuidados_especiais ?? undefined,
-      chave_foto_inicial: item.chave_foto_inicial ?? undefined,
-      url_foto_inicial: item.url_foto_inicial ?? undefined,
       valor_unitario_base: paraDecimal(item.valor_unitario_base),
       valor_unitario_desconto: paraDecimal(item.valor_unitario_desconto),
       valor_unitario_final: paraDecimal(item.valor_unitario_final),
@@ -758,7 +752,7 @@ export class OrdensServicoService {
       valor_total: Prisma.Decimal;
     };
     responsavelId: string;
-    usuarioAtual: PayloadToken;
+    usuarioAtual: PayloadAutenticacao;
     snapshotClienteCriptografado: unknown;
     snapshotEnderecoColetaCriptografado: unknown;
     snapshotEnderecoEntregaCriptografado: unknown;
@@ -909,8 +903,6 @@ export class OrdensServicoService {
           valor_total_bruto: item.valor_total_bruto,
           valor_total_desconto: item.valor_total_desconto,
           valor_total_final: item.valor_total_final,
-          chave_foto_inicial: item.chave_foto_inicial,
-          url_foto_inicial: item.url_foto_inicial,
         },
       });
 

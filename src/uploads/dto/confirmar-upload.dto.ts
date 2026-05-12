@@ -18,10 +18,6 @@ export class ConfirmarImagemOrdemServicoDto {
   @IsNotEmpty()
   chave_s3!: string;
 
-  @IsOptional()
-  @IsString()
-  url_arquivo?: string;
-
   @IsString()
   @IsNotEmpty()
   @MaxLength(191)
@@ -55,10 +51,6 @@ export class ConfirmarArquivoClienteDto {
   @IsNotEmpty()
   chave_s3!: string;
 
-  @IsOptional()
-  @IsString()
-  url_arquivo?: string;
-
   @IsString()
   @IsNotEmpty()
   @MaxLength(191)
@@ -86,7 +78,4 @@ export class ConfirmarAssinaturaOrdemServicoDto {
   @IsNotEmpty()
   chave_s3!: string;
 
-  @IsOptional()
-  @IsString()
-  url_arquivo?: string;
 }

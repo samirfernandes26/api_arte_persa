@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NextFunction, Request, Response } from 'express';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import { FilasService } from './filas.service';
 
 const logger = new Logger('PainelFilas');
@@ -29,7 +29,7 @@ const criarMiddlewareAutenticacaoPainel =
       .filter(Boolean);
 
     try {
-      const payload = await jwtService.verifyAsync<PayloadToken>(token, {
+      const payload = await jwtService.verifyAsync<PayloadAutenticacao>(token, {
         secret: configService.getOrThrow<string>('JWT_SEGREDO_ACESSO'),
         issuer: configService.get<string>('JWT_EMISSOR') || undefined,
         audience: configService.get<string>('JWT_AUDIENCIA') || undefined,

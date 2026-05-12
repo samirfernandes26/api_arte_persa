@@ -4,7 +4,7 @@
 
 - Prefixo global: `/api`
 - Formato: `application/json`
-- Autenticacao: `Authorization: Bearer <access_token>`
+- Autenticacao: `Authorization: Bearer <token_acesso>`
 - Datas: `ISO 8601`
 - Campos `Decimal` do Prisma costumam ser serializados em JSON como `string`
 - Validacao global:
@@ -32,9 +32,9 @@
 | Metodo | Rota | Descricao | Body | Response |
 | --- | --- | --- | --- | --- |
 | `POST` | `/api/usuarios/primeiro-master` | Cria o primeiro usuario `master` do sistema vazio | Mesmo formato de `CriarUsuarioDto` | Usuario criado |
-| `POST` | `/api/autenticacao/login` | Autentica usuario e devolve access/refresh token | [login.json](./EXEMPLOS/payloads/login.json) | [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.json) |
-| `POST` | `/api/autenticacao/refresh` | Renova o par de tokens | Mesmo contrato de `RefreshTokenDto` | [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.json) |
-| `POST` | `/api/autenticacao/logout` | Revoga refresh token | `{ "refresh_token": "..." }` | `{ "mensagem": "Logout concluido." }` |
+| `POST` | `/api/autenticacao/entrar` | Autentica usuario e devolve `token_acesso` e `token_atualizacao` | [login.json](./EXEMPLOS/payloads/login.json) | [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.json) |
+| `POST` | `/api/autenticacao/renovar-token` | Renova o par de tokens | Mesmo contrato de `TokenAtualizacaoDto` | [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.json) |
+| `POST` | `/api/autenticacao/sair` | Revoga token de atualizacao | `{ "token_atualizacao": "..." }` | `{ "mensagem": "Saida concluida." }` |
 
 ## 1. Autenticacao
 
@@ -45,7 +45,7 @@
 ### Exemplo detalhado: login
 
 ```http
-POST /api/autenticacao/login
+POST /api/autenticacao/entrar
 Content-Type: application/json
 ```
 
@@ -198,6 +198,8 @@ Response: [ordem-servico-detalhe.json](./EXEMPLOS/responses/ordem-servico-detalh
 Observacao:
 
 - quando `S3_USE_KMS=true`, a resposta da URL pre-assinada devolve os cabecalhos `x-amz-server-side-encryption` e `x-amz-server-side-encryption-aws-kms-key-id`
+- cada URL pre-assinada registra uma `intencao_upload`; a confirmacao falha se a chave nao existir no S3, estiver fora do prefixo ou nao corresponder a entidade esperada
+- os payloads de confirmacao e de dominio enviam apenas `chave_s3`; a API recalcula internamente a URL publica correspondente
 
 ## 9. Faturas
 

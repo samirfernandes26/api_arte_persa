@@ -1,14 +1,25 @@
-import { UploadsService } from './uploads.service';
+import { ServicoUploads } from './uploads.service';
 import { TipoDestinoUpload } from '../comum/enums/tipo-destino-upload.enum';
 
-describe('UploadsService', () => {
+describe('ServicoUploads', () => {
   const prismaMock = {
     ordemServico: {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    itemOrdemServico: {
+      findUnique: jest.fn(),
+    },
     cliente: {
       findUnique: jest.fn(),
+    },
+    fatura: {
+      findUnique: jest.fn(),
+    },
+    intencaoUpload: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
     },
     imagemOrdemServico: {
       create: jest.fn(),
@@ -38,7 +49,7 @@ describe('UploadsService', () => {
     }),
   };
 
-  let service: UploadsService;
+  let service: ServicoUploads;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -53,7 +64,18 @@ describe('UploadsService', () => {
     });
     s3Mock.obterUrlObjeto.mockReturnValue('https://cdn.exemplo/arquivo');
     s3Mock.obterBucketPadrao.mockReturnValue('bucket-teste');
-    service = new UploadsService(
+    prismaMock.ordemServico.findUnique.mockResolvedValue({
+      id: '11111111-1111-1111-1111-111111111111',
+      ativo: true,
+      data_exclusao: null,
+    });
+    prismaMock.itemOrdemServico.findUnique.mockResolvedValue({
+      id: '22222222-2222-2222-2222-222222222222',
+      ordem_servico_id: '11111111-1111-1111-1111-111111111111',
+      ativo: true,
+      data_exclusao: null,
+    });
+    service = new ServicoUploads(
       configServiceMock as never,
       prismaMock as never,
       s3Mock as never,
@@ -74,7 +96,7 @@ describe('UploadsService', () => {
       item_ordem_servico_id: uuidItem,
       nome_arquivo: 'Foto Inicial.JPG',
       tipo_mime: 'image/jpeg',
-    });
+    }, 'usuario-teste');
 
     expect(s3Mock.obterUrlPreAssinada).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -82,5 +104,6 @@ describe('UploadsService', () => {
         tipo_conteudo: 'image/jpeg',
       }),
     );
+    expect(prismaMock.intencaoUpload.create).toHaveBeenCalled();
   });
 });

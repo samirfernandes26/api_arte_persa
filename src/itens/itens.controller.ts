@@ -2,8 +2,10 @@ import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
+import { serializarDto, serializarListaDto } from '../comum/utilitarios/serializacao.util';
 import { AtualizarItemOrdemServicoDto } from './dto/atualizar-item-ordem-servico.dto';
+import { ItemResponseDto } from './dto/item-response.dto';
 import { ItensService } from './itens.service';
 
 @Controller('itens')
@@ -16,8 +18,11 @@ export class ItensController {
     PerfilUsuario.MASTER,
   )
   @Get('ordem-servico/:ordemServicoId')
-  listarPorOrdemServico(@Param('ordemServicoId') ordemServicoId: string) {
-    return this.itensService.listarPorOrdemServico(ordemServicoId);
+  async listarPorOrdemServico(@Param('ordemServicoId') ordemServicoId: string) {
+    return serializarListaDto(
+      ItemResponseDto,
+      await this.itensService.listarPorOrdemServico(ordemServicoId),
+    );
   }
 
   @Perfis(
@@ -26,8 +31,8 @@ export class ItensController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.itensService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    return serializarDto(ItemResponseDto, await this.itensService.buscarPorId(id));
   }
 
   @Perfis(
@@ -36,11 +41,14 @@ export class ItensController {
     PerfilUsuario.MASTER,
   )
   @Patch(':id')
-  atualizar(
+  async atualizar(
     @Param('id') id: string,
     @Body() dto: AtualizarItemOrdemServicoDto,
-    @UsuarioAtual() usuarioAtual: PayloadToken,
+    @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
-    return this.itensService.atualizar(id, dto, usuarioAtual.sub);
+    return serializarDto(
+      ItemResponseDto,
+      await this.itensService.atualizar(id, dto, usuarioAtual.sub),
+    );
   }
 }

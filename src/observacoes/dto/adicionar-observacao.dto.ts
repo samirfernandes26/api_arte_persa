@@ -4,6 +4,7 @@ import {
   IsArray,
   IsEnum,
   IsInt,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -17,16 +18,15 @@ import { VisibilidadeObservacao } from '../../comum/enums/visibilidade-observaca
 
 export class AdicionarImagemObservacaoDto {
   @IsString()
+  @IsNotEmpty()
   chave_s3!: string;
 
-  @IsOptional()
   @IsString()
-  url_arquivo?: string;
-
-  @IsString()
+  @IsNotEmpty()
   nome_arquivo!: string;
 
   @IsString()
+  @IsNotEmpty()
   tipo_mime!: string;
 
   @IsNumber()

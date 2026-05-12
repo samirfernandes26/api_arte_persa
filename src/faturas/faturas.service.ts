@@ -13,8 +13,8 @@ import {
 } from '../comum/utilitarios/dinheiro.util';
 import { FilasService } from '../filas/filas.service';
 import { KmsService } from '../kms/kms.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { PayloadToken } from '../comum/interfaces/payload-token.interface';
+import { ServicoPrisma } from '../prisma/prisma.service';
+import { PayloadAutenticacao } from '../comum/interfaces/payload-token.interface';
 import { StatusFatura } from '../comum/enums/status-fatura.enum';
 import { AtualizarStatusFaturaDto } from './dto/atualizar-status-fatura.dto';
 import { ConsultarFaturasDto } from './dto/consultar-faturas.dto';
@@ -23,12 +23,12 @@ import { CriarFaturaDto } from './dto/criar-fatura.dto';
 @Injectable()
 export class FaturasService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly prisma: ServicoPrisma,
     private readonly filasService: FilasService,
     private readonly kmsService: KmsService,
   ) {}
 
-  async criar(dto: CriarFaturaDto, usuarioAtual: PayloadToken) {
+  async criar(dto: CriarFaturaDto, usuarioAtual: PayloadAutenticacao) {
     const ordem = await this.prisma.ordemServico.findUnique({
       where: { id: dto.ordem_servico_id },
       include: {
@@ -128,7 +128,7 @@ export class FaturasService {
   async atualizarStatus(
     id: string,
     dto: AtualizarStatusFaturaDto,
-    usuarioAtual: PayloadToken,
+    usuarioAtual: PayloadAutenticacao,
   ) {
     await this.buscarPorId(id);
 
@@ -173,7 +173,7 @@ export class FaturasService {
 
   private async criarFaturaComNumeroSeguro(entrada: {
     dto: CriarFaturaDto;
-    usuarioAtual: PayloadToken;
+    usuarioAtual: PayloadAutenticacao;
     valorSubtotal: Prisma.Decimal;
     valorDesconto: Prisma.Decimal;
     valorImpostos: Prisma.Decimal;

@@ -4,10 +4,10 @@ import { UsuarioResponseDto } from '../../usuarios/dto/usuario-response.dto';
 @Exclude()
 export class RespostaAutenticacaoDto {
   @Expose()
-  access_token!: string;
+  token_acesso!: string;
 
   @Expose()
-  refresh_token!: string;
+  token_atualizacao!: string;
 
   @Expose()
   @Type(() => UsuarioResponseDto)

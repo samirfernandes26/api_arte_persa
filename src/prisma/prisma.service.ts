@@ -1,6 +1,6 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '.prisma/client';
 
 @Injectable()
 export class ServicoPrisma extends PrismaClient implements OnModuleInit {
@@ -35,5 +35,3 @@ export class ServicoPrisma extends PrismaClient implements OnModuleInit {
     });
   }
 }
-
-export { ServicoPrisma as PrismaService };

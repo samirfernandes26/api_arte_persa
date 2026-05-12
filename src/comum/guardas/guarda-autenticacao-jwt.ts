@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { CHAVE_ROTA_PUBLICA } from '../decoradores/publico.decorator';
-import { PayloadToken } from '../interfaces/payload-token.interface';
+import { PayloadAutenticacao } from '../interfaces/payload-token.interface';
 import { RequisicaoAutenticada } from '../interfaces/requisicao-autenticada.interface';
 
 @Injectable()
@@ -37,7 +37,7 @@ export class GuardaAutenticacaoJwt implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<PayloadToken>(token, {
+      const payload = await this.jwtService.verifyAsync<PayloadAutenticacao>(token, {
         secret: this.configService.getOrThrow<string>('JWT_SEGREDO_ACESSO'),
         issuer: this.configService.get<string>('JWT_EMISSOR') || undefined,
         audience: this.configService.get<string>('JWT_AUDIENCIA') || undefined,

@@ -16,11 +16,11 @@ import { criarPayloadCliente } from '../factories/cliente.factory';
 import { criarPayloadOrdemServico } from '../factories/ordem-servico.factory';
 import { criarPayloadServico } from '../factories/servico.factory';
 import { FILA_PDF } from '../../../src/filas/tokens-fila';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ServicoPrisma } from '../../../src/prisma/prisma.service';
 
 describe('Integracao - Filas BullMQ', () => {
   let app: NestExpressApplication;
-  let prisma: PrismaService;
+  let prisma: ServicoPrisma;
   let filaPdf: Queue;
 
   beforeAll(async () => {
@@ -49,19 +49,19 @@ describe('Integracao - Filas BullMQ', () => {
 
     const servico = await request(app.getHttpServer())
       .post('/api/servicos')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadServico())
       .expect(201);
 
     const cliente = await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(criarPayloadCliente())
       .expect(201);
 
     const ordem = await request(app.getHttpServer())
       .post('/api/ordens-servico')
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send(
         criarPayloadOrdemServico({
           clienteId: cliente.body.id,
@@ -74,7 +74,7 @@ describe('Integracao - Filas BullMQ', () => {
 
     await request(app.getHttpServer())
       .post(`/api/ordens-servico/${ordem.body.id}/gerar-pdf`)
-      .set('Authorization', `Bearer ${loginMaster.access_token}`)
+      .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .expect(201);
 
     const jobs = await esperarAte(

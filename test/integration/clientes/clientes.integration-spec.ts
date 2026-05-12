@@ -11,11 +11,11 @@ import {
   limparFilas,
 } from '../apoio/limpeza-integracao';
 import { criarPayloadCliente } from '../factories/cliente.factory';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ServicoPrisma } from '../../../src/prisma/prisma.service';
 
 describe('Integracao - Clientes', () => {
   let app: NestExpressApplication;
-  let prisma: PrismaService;
+  let prisma: ServicoPrisma;
 
   beforeAll(async () => {
     const contexto = await criarAplicacaoIntegracao();
@@ -43,7 +43,7 @@ describe('Integracao - Clientes', () => {
     const payload = criarPayloadCliente();
     const resposta = await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${login.access_token}`)
+      .set('Authorization', `Bearer ${login.token_acesso}`)
       .send(payload)
       .expect(201);
 
@@ -88,7 +88,7 @@ describe('Integracao - Clientes', () => {
 
     const resposta = await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${login.access_token}`)
+      .set('Authorization', `Bearer ${login.token_acesso}`)
       .send(payload)
       .expect(400);
 
@@ -101,19 +101,19 @@ describe('Integracao - Clientes', () => {
 
     await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${login.access_token}`)
+      .set('Authorization', `Bearer ${login.token_acesso}`)
       .send(criarPayloadCliente({ nome_razao_social: 'Cliente Alfa Persianas' }))
       .expect(201);
 
     await request(app.getHttpServer())
       .post('/api/clientes')
-      .set('Authorization', `Bearer ${login.access_token}`)
+      .set('Authorization', `Bearer ${login.token_acesso}`)
       .send(criarPayloadCliente({ nome_razao_social: 'Cliente Beta Sofas' }))
       .expect(201);
 
     const resposta = await request(app.getHttpServer())
       .get('/api/clientes?busca=Alfa')
-      .set('Authorization', `Bearer ${login.access_token}`)
+      .set('Authorization', `Bearer ${login.token_acesso}`)
       .expect(200);
 
     expect(resposta.body).toHaveLength(1);

@@ -14,8 +14,8 @@ O projeto tambem usa `Zod` para validacao de ambiente em `src/configuracao/esque
 
 | DTO | Modulo | Objetivo | Exemplo |
 | --- | --- | --- | --- |
-| `LoginDto` | autenticacao | Login com email e senha | [login.json](./EXEMPLOS/payloads/login.json) |
-| `RefreshTokenDto` | autenticacao | Renovacao e logout | Corpo simples com `refresh_token` |
+| `EntrarDto` | autenticacao | Login com email e senha | [login.json](./EXEMPLOS/payloads/login.json) |
+| `TokenAtualizacaoDto` | autenticacao | Renovacao e logout | Corpo simples com `token_atualizacao` |
 | `CriarUsuarioDto` | usuarios | Criacao de usuario | Campos `nome`, `email`, `senha`, `perfil` |
 | `CriarClienteDto` | clientes | Cliente com contatos e enderecos aninhados | [criar-cliente-completo.json](./EXEMPLOS/payloads/criar-cliente-completo.json) |
 | `CriarServicoDto` | servicos | Cadastro de servico de catalogo | Ver modulo de servicos |
@@ -25,7 +25,7 @@ O projeto tambem usa `Zod` para validacao de ambiente em `src/configuracao/esque
 | `GerarUrlPreAssinadaDto` | uploads | Definicao do destino e tipo do upload | [gerar-presigned-url.json](./EXEMPLOS/payloads/gerar-presigned-url.json) |
 | `CriarFaturaDto` | faturas | Criacao de fatura da ordem | Ver modulo de faturas |
 
-## 1. LoginDto
+## 1. EntrarDto
 
 Campos:
 
@@ -34,7 +34,7 @@ Campos:
 
 Uso:
 
-- `POST /api/autenticacao/login`
+- `POST /api/autenticacao/entrar`
 
 ## 2. CriarUsuarioDto
 
@@ -145,10 +145,13 @@ Regras:
 Campos recorrentes:
 
 - `chave_s3`
-- `url_arquivo` opcional
 - `nome_arquivo`
 - `tipo_mime`
 - `tamanho_bytes`
+
+Observacao:
+
+- os DTOs de confirmacao nao aceitam `url_arquivo`; a URL e sempre recalculada pelo backend a partir de `chave_s3`
 
 ## 9. DTOs de consulta
 

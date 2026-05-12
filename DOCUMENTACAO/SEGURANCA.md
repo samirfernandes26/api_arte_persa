@@ -98,4 +98,5 @@ O desenho com envelope encryption reduz impacto de rotacao:
 - habilitar rotacao automatica da CMK no AWS KMS
 - restringir IAM para `kms:GenerateDataKey` e `kms:Decrypt`
 - restringir o bucket para aceitar somente uploads com a CMK esperada
+- monitorar a tabela `intencoes_upload` e expurgar intencoes expiradas periodicamente
 - auditar acessos com CloudTrail e logs de aplicacao

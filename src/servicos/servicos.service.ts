@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { ServicoPrisma } from '../prisma/prisma.service';
 import { PaginacaoConsultaDto } from '../comum/dto/paginacao-consulta.dto';
 import { CriarServicoDto } from './dto/criar-servico.dto';
 import { AtualizarServicoDto } from './dto/atualizar-servico.dto';
 
 @Injectable()
 export class ServicosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: ServicoPrisma) {}
 
   async criar(dto: CriarServicoDto, usuarioId: string) {
     return this.prisma.servicoCatalogo.create({

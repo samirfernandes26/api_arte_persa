@@ -1,6 +1,7 @@
 import {
   EntradaEnvioArquivoS3,
   EntradaUrlPreAssinadaS3,
+  MetadadosObjetoS3,
   ResultadoEnvioArquivoS3,
   ResultadoUrlPreAssinadaS3,
 } from '../../../src/s3/s3.types';
@@ -13,6 +14,7 @@ export class S3FalsoMemoria {
       corpo: Buffer;
       tipoConteudo?: string;
       url: string;
+      metadados: Record<string, string>;
     }
   >();
 
@@ -26,10 +28,11 @@ export class S3FalsoMemoria {
     const url = this.obterUrlObjeto(chave);
 
     this.objetos.set(chave, {
-      corpo,
-      tipoConteudo: entrada.tipo_conteudo,
-      url,
-    });
+        corpo,
+        tipoConteudo: entrada.tipo_conteudo,
+        url,
+        metadados: entrada.metadados ?? {},
+      });
 
     const usarKms = process.env.S3_USE_KMS === 'true';
     const chaveKmsId = process.env.AWS_KMS_KEY_ID || undefined;
@@ -113,6 +116,27 @@ export class S3FalsoMemoria {
     return this.obterBufferObjeto(chave);
   }
 
+  async obterMetadadosObjeto(chave: string): Promise<MetadadosObjetoS3 | null> {
+    const chaveNormalizada = chave.replace(/^\/+/, '');
+    const objeto = this.objetos.get(chaveNormalizada);
+    if (!objeto) {
+      return null;
+    }
+
+    return {
+      bucket: this.bucketPadrao,
+      chave: chaveNormalizada,
+      tipo_conteudo: objeto.tipoConteudo,
+      tamanho_bytes: objeto.corpo.byteLength,
+      etag: `etag-${chaveNormalizada}`,
+      metadados: objeto.metadados,
+    };
+  }
+
+  async getObjectMetadata(chave: string): Promise<MetadadosObjetoS3 | null> {
+    return this.obterMetadadosObjeto(chave);
+  }
+
   registrarUploadSimulado(
     chave: string,
     conteudo: Buffer | string,
@@ -125,6 +149,7 @@ export class S3FalsoMemoria {
       corpo: buffer,
       tipoConteudo,
       url: this.obterUrlObjeto(chave),
+      metadados: {},
     });
   }
 

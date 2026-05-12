@@ -25,13 +25,13 @@ export async function autenticar(
   senha: string,
 ) {
   const resposta = await request(app.getHttpServer())
-    .post('/api/autenticacao/login')
+    .post('/api/autenticacao/entrar')
     .send({ email, senha })
     .expect(201);
 
   return resposta.body as {
-    access_token: string;
-    refresh_token: string;
+    token_acesso: string;
+    token_atualizacao: string;
     usuario: { id: string; email: string; perfil: string };
   };
 }
