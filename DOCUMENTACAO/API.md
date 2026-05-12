@@ -31,7 +31,7 @@
 
 | Metodo | Rota | Descricao | Body | Response |
 | --- | --- | --- | --- | --- |
-| `POST` | `/api/usuarios/primeiro-master` | Cria o primeiro usuario `master` do sistema vazio | Mesmo formato de `CriarUsuarioDto` | Usuario criado |
+| `POST` | `/api/usuarios/primeiro-master` | Cria o primeiro usuario `master` do sistema vazio | [criar-primeiro-master.json](./EXEMPLOS/payloads/criar-primeiro-master.json) | Usuario criado |
 | `POST` | `/api/autenticacao/entrar` | Autentica usuario e devolve `token_acesso` e `token_atualizacao` | [login.json](./EXEMPLOS/payloads/login.json) | [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.json) |
 | `POST` | `/api/autenticacao/renovar-token` | Renova o par de tokens | Mesmo contrato de `TokenAtualizacaoDto` | [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.json) |
 | `POST` | `/api/autenticacao/sair` | Revoga token de atualizacao | `{ "token_atualizacao": "..." }` | `{ "mensagem": "Saida concluida." }` |
@@ -62,7 +62,7 @@ Response de referencia: [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.
 
 | Metodo | Rota | Perfis | Headers | Request | Response |
 | --- | --- | --- | --- | --- | --- |
-| `POST` | `/api/usuarios` | `master` | `Authorization` | `CriarUsuarioDto` | Usuario criado |
+| `POST` | `/api/usuarios` | `master` | `Authorization` | [criar-usuario-supervisor.json](./EXEMPLOS/payloads/criar-usuario-supervisor.json) | Usuario criado |
 | `GET` | `/api/usuarios` | `master`, `supervisor` | `Authorization` | Sem body | Lista de usuarios |
 | `GET` | `/api/usuarios/:id` | `master`, `supervisor` | `Authorization` | Sem body | Usuario detalhado |
 | `PATCH` | `/api/usuarios/:id` | `master` | `Authorization` | `AtualizarUsuarioDto` | Usuario atualizado |
@@ -74,6 +74,11 @@ Response de referencia: [login-sucesso.json](./EXEMPLOS/responses/login-sucesso.
 - `senha`
 - `perfil`
 - `ativo`
+
+Exemplos de payload:
+
+- primeiro master: [criar-primeiro-master.json](./EXEMPLOS/payloads/criar-primeiro-master.json)
+- criacao autenticada: [criar-usuario-supervisor.json](./EXEMPLOS/payloads/criar-usuario-supervisor.json)
 
 ## 3. Clientes
 

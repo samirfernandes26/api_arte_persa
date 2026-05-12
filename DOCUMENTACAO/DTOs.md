@@ -16,7 +16,7 @@ O projeto tambem usa `Zod` para validacao de ambiente em `src/configuracao/esque
 | --- | --- | --- | --- |
 | `EntrarDto` | autenticacao | Login com email e senha | [login.json](./EXEMPLOS/payloads/login.json) |
 | `TokenAtualizacaoDto` | autenticacao | Renovacao e logout | Corpo simples com `token_atualizacao` |
-| `CriarUsuarioDto` | usuarios | Criacao de usuario | Campos `nome`, `email`, `senha`, `perfil` |
+| `CriarUsuarioDto` | usuarios | Criacao de usuario | [criar-primeiro-master.json](./EXEMPLOS/payloads/criar-primeiro-master.json) e [criar-usuario-supervisor.json](./EXEMPLOS/payloads/criar-usuario-supervisor.json) |
 | `CriarClienteDto` | clientes | Cliente com contatos e enderecos aninhados | [criar-cliente-completo.json](./EXEMPLOS/payloads/criar-cliente-completo.json) |
 | `CriarServicoDto` | servicos | Cadastro de servico de catalogo | Ver modulo de servicos |
 | `CriarOrdemServicoDto` | ordens-servico | Ordem completa com itens e servicos executados | [criar-ordem-servico-completa.json](./EXEMPLOS/payloads/criar-ordem-servico-completa.json) |
@@ -50,6 +50,11 @@ Validacoes relevantes:
 - trim e lowercase em campos textuais importantes
 - senha minima de 8 caracteres
 - `perfil` restrito ao enum
+
+Exemplos:
+
+- primeiro usuario master: [criar-primeiro-master.json](./EXEMPLOS/payloads/criar-primeiro-master.json)
+- usuario supervisor autenticado: [criar-usuario-supervisor.json](./EXEMPLOS/payloads/criar-usuario-supervisor.json)
 
 ## 3. CriarClienteDto
 
