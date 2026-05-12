@@ -146,7 +146,7 @@ export class ProcessadorImagem implements OnModuleInit, OnModuleDestroy {
       tipo_conteudo: tipoConteudo,
       cache_control: 'public, max-age=31536000, immutable',
       metadados: {
-        ordem_servico_id: job.data.ordem_servico_id,
+        ordem_servico_id: String(job.data.ordem_servico_id),
         chave_origem: job.data.chave_origem,
         ...(job.data.metadados ?? {}),
       },

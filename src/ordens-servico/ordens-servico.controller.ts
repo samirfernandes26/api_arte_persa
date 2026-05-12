@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
@@ -56,7 +56,7 @@ export class OrdensServicoController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  async buscarPorId(@Param('id') id: string) {
+  async buscarPorId(@Param('id', ParseIntPipe) id: number) {
     return serializarDto(
       OrdemServicoResponseDto,
       await this.ordensServicoService.buscarPorId(id),
@@ -70,7 +70,7 @@ export class OrdensServicoController {
   )
   @Patch(':id')
   async atualizar(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: AtualizarOrdemServicoDto,
     @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
@@ -87,7 +87,7 @@ export class OrdensServicoController {
   )
   @Patch(':id/status')
   async atualizarStatus(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: AtualizarStatusOrdemServicoDto,
     @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {
@@ -103,7 +103,7 @@ export class OrdensServicoController {
     PerfilUsuario.MASTER,
   )
   @Post(':id/gerar-pdf')
-  solicitarGeracaoPdf(@Param('id') id: string) {
+  solicitarGeracaoPdf(@Param('id', ParseIntPipe) id: number) {
     return this.ordensServicoService.solicitarGeracaoPdf(id);
   }
 }

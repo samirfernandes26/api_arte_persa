@@ -6,7 +6,7 @@ import { UsuarioResumidoDto } from '../../usuarios/dto/usuario-response.dto';
 @Exclude()
 export class ImagemObservacaoResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   chave_s3!: string;
@@ -30,22 +30,22 @@ export class ImagemObservacaoResponseDto {
 @Exclude()
 export class ObservacaoResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   tipo_alvo!: TipoAlvoObservacao;
 
   @Expose()
-  ordem_servico_id?: string | null;
+  ordem_servico_id?: number | null;
 
   @Expose()
-  item_ordem_servico_id?: string | null;
+  item_ordem_servico_id?: number | null;
 
   @Expose()
-  cliente_id?: string | null;
+  cliente_id?: number | null;
 
   @Expose()
-  fatura_id?: string | null;
+  fatura_id?: number | null;
 
   @Expose()
   visibilidade!: VisibilidadeObservacao;

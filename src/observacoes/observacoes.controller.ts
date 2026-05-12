@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
 import { PerfilUsuario } from '../comum/enums/perfil-usuario.enum';
@@ -34,7 +34,7 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('ordens-servico/:ordemServicoId')
-  async listarPorOrdemServico(@Param('ordemServicoId') ordemServicoId: string) {
+  async listarPorOrdemServico(@Param('ordemServicoId', ParseIntPipe) ordemServicoId: number) {
     return serializarListaDto(
       ObservacaoResponseDto,
       await this.observacoesService.listarPorOrdemServico(ordemServicoId),
@@ -47,7 +47,7 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('itens/:itemId')
-  async listarPorItem(@Param('itemId') itemId: string) {
+  async listarPorItem(@Param('itemId', ParseIntPipe) itemId: number) {
     return serializarListaDto(
       ObservacaoResponseDto,
       await this.observacoesService.listarPorItem(itemId),
@@ -60,7 +60,7 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('clientes/:clienteId')
-  async listarPorCliente(@Param('clienteId') clienteId: string) {
+  async listarPorCliente(@Param('clienteId', ParseIntPipe) clienteId: number) {
     return serializarListaDto(
       ObservacaoResponseDto,
       await this.observacoesService.listarPorCliente(clienteId),
@@ -73,7 +73,7 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get('faturas/:faturaId')
-  async listarPorFatura(@Param('faturaId') faturaId: string) {
+  async listarPorFatura(@Param('faturaId', ParseIntPipe) faturaId: number) {
     return serializarListaDto(
       ObservacaoResponseDto,
       await this.observacoesService.listarPorFatura(faturaId),
@@ -86,7 +86,7 @@ export class ObservacoesController {
     PerfilUsuario.MASTER,
   )
   @Get(':id')
-  async buscarPorId(@Param('id') id: string) {
+  async buscarPorId(@Param('id', ParseIntPipe) id: number) {
     return serializarDto(
       ObservacaoResponseDto,
       await this.observacoesService.buscarPorId(id),

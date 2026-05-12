@@ -4,7 +4,7 @@ export interface TarefaNotificacao {
   destinatario: string;
   assunto?: string;
   mensagem: string;
-  metadados?: Record<string, string>;
+  metadados?: Record<string, string | number>;
 }
 
 export interface ResultadoTarefaNotificacao {

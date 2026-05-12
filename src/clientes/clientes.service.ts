@@ -17,7 +17,7 @@ export class ClientesService {
     private readonly kmsService: KmsService,
   ) {}
 
-  async criar(dto: CriarClienteDto, usuarioId: string) {
+  async criar(dto: CriarClienteDto, usuarioId: number) {
     const contatosCriptografados = dto.contatos?.length
       ? await Promise.all(
           dto.contatos.map(async (contato) => ({
@@ -142,7 +142,7 @@ export class ClientesService {
     return Promise.all(clientes.map((cliente) => this.descriptografarCliente(cliente)));
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: number) {
     const cliente = await this.prisma.cliente.findUnique({
       where: { id },
       include: {
@@ -159,7 +159,7 @@ export class ClientesService {
     return this.descriptografarCliente(cliente);
   }
 
-  async atualizar(id: string, dto: AtualizarClienteDto, usuarioId: string) {
+  async atualizar(id: number, dto: AtualizarClienteDto, usuarioId: number) {
     await this.buscarPorId(id);
     const contatosCriptografados = dto.contatos
       ? await Promise.all(
@@ -286,7 +286,7 @@ export class ClientesService {
     return this.descriptografarCliente(cliente);
   }
 
-  async obterSnapshotCliente(id: string) {
+  async obterSnapshotCliente(id: number) {
     const cliente = await this.buscarPorId(id);
 
     const enderecoColeta =

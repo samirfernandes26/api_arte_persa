@@ -67,7 +67,7 @@ export class ObservacoesService {
     });
   }
 
-  async listarPorOrdemServico(ordemServicoId: string) {
+  async listarPorOrdemServico(ordemServicoId: number) {
     return this.prisma.observacao.findMany({
       where: {
         ordem_servico_id: ordemServicoId,
@@ -79,7 +79,7 @@ export class ObservacoesService {
     });
   }
 
-  async listarPorItem(itemId: string) {
+  async listarPorItem(itemId: number) {
     return this.prisma.observacao.findMany({
       where: {
         item_ordem_servico_id: itemId,
@@ -91,7 +91,7 @@ export class ObservacoesService {
     });
   }
 
-  async listarPorCliente(clienteId: string) {
+  async listarPorCliente(clienteId: number) {
     return this.prisma.observacao.findMany({
       where: {
         cliente_id: clienteId,
@@ -103,7 +103,7 @@ export class ObservacoesService {
     });
   }
 
-  async listarPorFatura(faturaId: string) {
+  async listarPorFatura(faturaId: number) {
     return this.prisma.observacao.findMany({
       where: {
         fatura_id: faturaId,
@@ -115,7 +115,7 @@ export class ObservacoesService {
     });
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: number) {
     const observacao = await this.prisma.observacao.findUnique({
       where: { id },
       include: this.includeCompleto(),

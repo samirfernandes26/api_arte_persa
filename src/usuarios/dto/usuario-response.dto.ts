@@ -4,7 +4,7 @@ import { PerfilUsuario } from '../../comum/enums/perfil-usuario.enum';
 @Exclude()
 export class UsuarioResumidoDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   nome!: string;

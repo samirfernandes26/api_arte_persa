@@ -41,7 +41,7 @@ import {
 } from './dto/criar-ordem-servico.dto';
 
 interface ServicoExecutadoMontado {
-  servico_catalogo_id?: string;
+  servico_catalogo_id?: number;
   nome_servico_snapshot: string;
   categoria_servico_snapshot?: string;
   unidade_cobranca_snapshot: UnidadeCobrancaServicoPrisma;
@@ -258,7 +258,7 @@ export class OrdensServicoService {
     return Promise.all(ordens.map((ordem) => this.descriptografarOrdemServico(ordem)));
   }
 
-  async buscarPorId(id: string): Promise<OrdemServicoCompleta> {
+  async buscarPorId(id: number): Promise<OrdemServicoCompleta> {
     const ordem = await this.prisma.ordemServico.findUnique({
       where: { id },
       include: incluirOrdemCompleta,
@@ -272,7 +272,7 @@ export class OrdensServicoService {
   }
 
   async atualizar(
-    id: string,
+    id: number,
     dto: AtualizarOrdemServicoDto,
     usuarioAtual: PayloadAutenticacao,
   ) {
@@ -431,7 +431,7 @@ export class OrdensServicoService {
   }
 
   async atualizarStatus(
-    id: string,
+    id: number,
     dto: AtualizarStatusOrdemServicoDto,
     usuarioAtual: PayloadAutenticacao,
   ) {
@@ -486,7 +486,7 @@ export class OrdensServicoService {
     return atualizada;
   }
 
-  async solicitarGeracaoPdf(id: string) {
+  async solicitarGeracaoPdf(id: number) {
     const ordem = await this.buscarPorId(id);
     await this.enfileirarGeracaoPdf(ordem);
     return { mensagem: 'Geracao de PDF solicitada com sucesso.' };
@@ -506,7 +506,7 @@ export class OrdensServicoService {
         itens.flatMap((item) =>
           item.servicos_executados
             .map((servico) => servico.servico_catalogo_id)
-            .filter((valor): valor is string => Boolean(valor)),
+            .filter((valor): valor is number => valor !== undefined),
         ),
       ),
     );
@@ -521,7 +521,7 @@ export class OrdensServicoService {
         })
       : [];
 
-    const mapaServicos = new Map<string, ServicoCatalogo>(
+    const mapaServicos = new Map<number, ServicoCatalogo>(
       servicosCatalogo.map((servico) => [servico.id, servico]),
     );
 
@@ -530,7 +530,7 @@ export class OrdensServicoService {
 
   private montarItem(
     item: CriarItemOrdemServicoDto,
-    mapaServicos: Map<string, ServicoCatalogo>,
+    mapaServicos: Map<number, ServicoCatalogo>,
   ): ItemMontado {
     if (!item.servicos_executados.length) {
       throw new BadRequestException(
@@ -578,7 +578,7 @@ export class OrdensServicoService {
 
   private montarServicoExecutado(
     servico: CriarServicoExecutadoItemDto,
-    mapaServicos: Map<string, ServicoCatalogo>,
+    mapaServicos: Map<number, ServicoCatalogo>,
   ): ServicoExecutadoMontado {
     const servicoCatalogo = servico.servico_catalogo_id
       ? mapaServicos.get(servico.servico_catalogo_id)
@@ -717,7 +717,7 @@ export class OrdensServicoService {
     };
   }
 
-  private async obterUsuarioAtivo(id: string) {
+  private async obterUsuarioAtivo(id: number) {
     const usuario = await this.prisma.usuario.findUnique({
       where: { id },
       select: { id: true, perfil: true, ativo: true, data_exclusao: true },
@@ -751,7 +751,7 @@ export class OrdensServicoService {
       valor_desconto: Prisma.Decimal;
       valor_total: Prisma.Decimal;
     };
-    responsavelId: string;
+    responsavelId: number;
     usuarioAtual: PayloadAutenticacao;
     snapshotClienteCriptografado: unknown;
     snapshotEnderecoColetaCriptografado: unknown;
@@ -759,7 +759,7 @@ export class OrdensServicoService {
     motivoDescontoCriptografado: string | null | undefined;
     observacoesInternasCriptografadas: string | null | undefined;
     observacoesClienteCriptografadas: string | null | undefined;
-  }): Promise<string> {
+  }): Promise<number> {
     for (let tentativa = 1; tentativa <= 5; tentativa += 1) {
       const codigo = this.gerarCodigoOrdemServico();
 
@@ -876,9 +876,9 @@ export class OrdensServicoService {
 
   private async criarItensDaOrdem(
     transacao: Prisma.TransactionClient,
-    ordemId: string,
+    ordemId: number,
     itens: ItemMontado[],
-    usuarioId: string,
+    usuarioId: number,
   ) {
     for (const item of itens) {
       const itemCriado = await transacao.itemOrdemServico.create({

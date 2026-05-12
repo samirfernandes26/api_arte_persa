@@ -14,7 +14,7 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes } from 'crypt
 interface ContextoCriptografia {
   campo?: string;
   entidade?: string;
-  identificador?: string;
+  identificador?: string | number;
 }
 
 interface PacoteDadosCriptografados {
@@ -224,7 +224,10 @@ export class ServicoKms {
       ),
       campo: contexto?.campo ?? 'desconhecido',
       entidade: contexto?.entidade ?? 'desconhecida',
-      identificador: contexto?.identificador ?? 'nao-informado',
+      identificador:
+        contexto?.identificador !== undefined
+          ? String(contexto.identificador)
+          : 'nao-informado',
     };
   }
 

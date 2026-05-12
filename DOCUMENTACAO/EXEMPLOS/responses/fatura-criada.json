@@ -1,9 +1,9 @@
 {
-  "id": "f48e51c0-df37-4cab-b0c9-80851d765f77",
-  "ordem_servico_id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+  "id": 6001,
+  "ordem_servico_id": 5001,
   "numero": "FAT-20260511-0001",
-  "criado_por_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
-  "atualizado_por_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "criado_por_id": 1,
+  "atualizado_por_id": 1,
   "status": "rascunho",
   "emitida_em": null,
   "vencimento_em": "2026-05-20T00:00:00.000Z",
@@ -21,22 +21,22 @@
   "data_atualizacao": "2026-05-11T18:40:00.000Z",
   "data_exclusao": null,
   "ordem_servico": {
-    "id": "0b395729-f3e7-455c-bf1d-0d4338d6c104",
+    "id": 5001,
     "codigo": "OS-20260511-0001",
     "cliente": {
-      "id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+      "id": 101,
       "nome_razao_social": "Helena Duarte",
       "email_principal": "helena.duarte@example.com"
     }
   },
   "criado_por": {
-    "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+    "id": 1,
     "nome": "Samir Fernandes",
     "email": "master@artepersa.com.br",
     "perfil": "master"
   },
   "atualizado_por": {
-    "id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+    "id": 1,
     "nome": "Samir Fernandes",
     "email": "master@artepersa.com.br",
     "perfil": "master"

@@ -31,7 +31,7 @@ export class UsuariosService {
 
   async criar(
     dto: CriarUsuarioDto,
-    _usuarioExecutorId: string | null,
+    _usuarioExecutorId: number | null,
     perfilForcado?: PerfilUsuario,
   ): Promise<Usuario> {
     const existente = await this.prisma.usuario.findUnique({
@@ -68,7 +68,7 @@ export class UsuariosService {
     });
   }
 
-  async buscarPorId(id: string): Promise<Usuario> {
+  async buscarPorId(id: number): Promise<Usuario> {
     const usuario = await this.prisma.usuario.findUnique({ where: { id } });
     if (!usuario || !usuario.ativo || usuario.data_exclusao) {
       throw new NotFoundException('Usuario nao encontrado.');
@@ -84,9 +84,9 @@ export class UsuariosService {
   }
 
   async atualizar(
-    id: string,
+    id: number,
     dto: AtualizarUsuarioDto,
-    usuarioExecutorId: string,
+    usuarioExecutorId: number,
   ): Promise<Usuario> {
     const atual = await this.buscarPorId(id);
 

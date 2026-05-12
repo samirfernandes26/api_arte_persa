@@ -4,7 +4,7 @@ import { UnidadeCobrancaServico } from '../../comum/enums/unidade-cobranca-servi
 @Exclude()
 export class ServicoResumoResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   nome!: string;

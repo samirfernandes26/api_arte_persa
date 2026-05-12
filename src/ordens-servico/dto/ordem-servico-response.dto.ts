@@ -10,7 +10,7 @@ import { UsuarioResumidoDto } from '../../usuarios/dto/usuario-response.dto';
 @Exclude()
 export class ClienteResumoOrdemServicoDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   nome_razao_social!: string;
@@ -25,10 +25,10 @@ export class ClienteResumoOrdemServicoDto {
 @Exclude()
 export class ServicoExecutadoItemResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
-  servico_catalogo_id?: string | null;
+  servico_catalogo_id?: number | null;
 
   @Expose()
   nome_servico_snapshot!: string;
@@ -58,7 +58,7 @@ export class ServicoExecutadoItemResponseDto {
 @Exclude()
 export class ItemOrdemServicoResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   descricao!: string;
@@ -129,7 +129,7 @@ export class ItemOrdemServicoResponseDto {
 @Exclude()
 export class HistoricoStatusOrdemServicoResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   status_origem?: StatusOrdemServico | null;
@@ -154,7 +154,7 @@ export class HistoricoStatusOrdemServicoResponseDto {
 @Exclude()
 export class ImagemOrdemServicoResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   chave_s3!: string;
@@ -181,7 +181,7 @@ export class ImagemOrdemServicoResponseDto {
 @Exclude()
 export class FaturaResumoOrdemServicoDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   numero!: string;
@@ -196,13 +196,13 @@ export class FaturaResumoOrdemServicoDto {
 @Exclude()
 export class OrdemServicoResumoResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   codigo!: string;
 
   @Expose()
-  cliente_id!: string;
+  cliente_id!: number;
 
   @Expose()
   status!: StatusOrdemServico;

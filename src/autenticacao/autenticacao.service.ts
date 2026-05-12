@@ -77,7 +77,7 @@ export class AutenticacaoService {
     return { mensagem: 'Saida concluida.' };
   }
 
-  async obterUsuarioAutenticado(usuarioId: string) {
+  async obterUsuarioAutenticado(usuarioId: number) {
     const usuario = await this.usuariosService.buscarPorId(usuarioId);
     return serializarDto(UsuarioResponseDto, usuario);
   }
@@ -195,7 +195,7 @@ export class AutenticacaoService {
   }
 
   private async criarTokenAtualizacaoPersistido(
-    usuarioId: string,
+    usuarioId: number,
     familiaToken: string,
     contexto: { ip?: string; agenteUsuario?: string },
   ): Promise<TokenRefresh> {
@@ -238,7 +238,7 @@ export class AutenticacaoService {
     });
   }
 
-  private async revogarTokenAtualizacao(tokenId: string): Promise<void> {
+  private async revogarTokenAtualizacao(tokenId: number): Promise<void> {
     const token = await this.prisma.tokenRefresh.findUnique({
       where: { id: tokenId },
     });

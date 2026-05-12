@@ -5,7 +5,7 @@ export interface LinhaPdfOrdemServico {
 }
 
 export interface TarefaGeracaoPdfOrdemServico {
-  ordem_servico_id: string;
+  ordem_servico_id: number;
   codigo_ordem_servico: string;
   nome_cliente: string;
   status: string;

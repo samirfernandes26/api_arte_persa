@@ -6,10 +6,10 @@ import { ServicoExecutadoItemResponseDto } from '../../ordens-servico/dto/ordem-
 @Exclude()
 export class ItemResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
-  ordem_servico_id!: string;
+  ordem_servico_id!: number;
 
   @Expose()
   descricao!: string;

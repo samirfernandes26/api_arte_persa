@@ -4,15 +4,16 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   Matches,
   MaxLength,
   Min,
 } from 'class-validator';
 
 export class ConfirmarImagemOrdemServicoDto {
-  @IsUUID()
-  ordem_servico_id!: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  ordem_servico_id!: number;
 
   @IsString()
   @IsNotEmpty()
@@ -44,8 +45,10 @@ export class ConfirmarImagemOrdemServicoDto {
 }
 
 export class ConfirmarArquivoClienteDto {
-  @IsUUID()
-  cliente_id!: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  cliente_id!: number;
 
   @IsString()
   @IsNotEmpty()
@@ -71,11 +74,12 @@ export class ConfirmarArquivoClienteDto {
 }
 
 export class ConfirmarAssinaturaOrdemServicoDto {
-  @IsUUID()
-  ordem_servico_id!: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  ordem_servico_id!: number;
 
   @IsString()
   @IsNotEmpty()
   chave_s3!: string;
-
 }

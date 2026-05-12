@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { Publico } from '../comum/decoradores/publico.decorator';
 import { Perfis } from '../comum/decoradores/perfis.decorator';
 import { UsuarioAtual } from '../comum/decoradores/usuario-atual.decorator';
@@ -49,14 +49,14 @@ export class UsuariosController {
 
   @Perfis(PerfilUsuario.MASTER, PerfilUsuario.SUPERVISOR)
   @Get(':id')
-  async buscarPorId(@Param('id') id: string) {
+  async buscarPorId(@Param('id', ParseIntPipe) id: number) {
     return serializarDto(UsuarioResponseDto, await this.usuariosService.buscarPorId(id));
   }
 
   @Perfis(PerfilUsuario.MASTER)
   @Patch(':id')
   async atualizar(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: AtualizarUsuarioDto,
     @UsuarioAtual() usuarioAtual: PayloadAutenticacao,
   ) {

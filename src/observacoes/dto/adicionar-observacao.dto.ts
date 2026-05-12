@@ -8,7 +8,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
   Max,
   Min,
   ValidateNested,
@@ -49,20 +48,28 @@ export class AdicionarObservacaoDto {
   tipo_alvo!: TipoAlvoObservacao;
 
   @IsOptional()
-  @IsUUID()
-  ordem_servico_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  ordem_servico_id?: number;
 
   @IsOptional()
-  @IsUUID()
-  item_ordem_servico_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  item_ordem_servico_id?: number;
 
   @IsOptional()
-  @IsUUID()
-  cliente_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  cliente_id?: number;
 
   @IsOptional()
-  @IsUUID()
-  fatura_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  fatura_id?: number;
 
   @IsOptional()
   @IsEnum(VisibilidadeObservacao)

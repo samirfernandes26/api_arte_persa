@@ -18,10 +18,10 @@ import { GerarUrlPreAssinadaDto } from './dto/gerar-url-pre-assinada.dto';
 
 interface ContextoUpload {
   tipo_destino: TipoDestinoUpload;
-  ordem_servico_id?: string;
-  item_ordem_servico_id?: string;
-  cliente_id?: string;
-  fatura_id?: string;
+  ordem_servico_id?: number;
+  item_ordem_servico_id?: number;
+  cliente_id?: number;
+  fatura_id?: number;
 }
 
 interface ConfirmacaoUploadInterna extends ContextoUpload {
@@ -62,7 +62,7 @@ export class ServicoUploads {
     );
   }
 
-  async gerarUrlPreAssinada(dto: GerarUrlPreAssinadaDto, usuarioId: string) {
+  async gerarUrlPreAssinada(dto: GerarUrlPreAssinadaDto, usuarioId: number) {
     this.validarMimeParaDestino(dto.tipo_destino, dto.tipo_mime);
     await this.validarExistenciaDestino(dto);
 
@@ -104,7 +104,7 @@ export class ServicoUploads {
 
   async confirmarImagemAdicionalOrdem(
     dto: ConfirmarImagemOrdemServicoDto,
-    usuarioId: string,
+    usuarioId: number,
   ) {
     const upload = await this.confirmarUpload({
       tipo_destino: TipoDestinoUpload.IMAGEM_ADICIONAL_ORDEM,
@@ -132,7 +132,7 @@ export class ServicoUploads {
 
   async confirmarArquivoCliente(
     dto: ConfirmarArquivoClienteDto,
-    usuarioId: string,
+    usuarioId: number,
   ) {
     const upload = await this.confirmarUpload({
       tipo_destino: TipoDestinoUpload.ARQUIVO_CLIENTE,
@@ -159,7 +159,7 @@ export class ServicoUploads {
 
   async confirmarAssinaturaOrdem(
     dto: ConfirmarAssinaturaOrdemServicoDto,
-    usuarioId: string,
+    usuarioId: number,
   ) {
     const upload = await this.confirmarUpload({
       tipo_destino: TipoDestinoUpload.ASSINATURA_CLIENTE,
@@ -179,8 +179,8 @@ export class ServicoUploads {
   }
 
   async confirmarFotoInicialItem(entrada: {
-    ordem_servico_id: string;
-    item_ordem_servico_id: string;
+    ordem_servico_id: number;
+    item_ordem_servico_id: number;
     chave_s3: string;
   }): Promise<UploadConfirmado> {
     return this.confirmarUpload({
@@ -192,9 +192,9 @@ export class ServicoUploads {
   }
 
   async confirmarImagemObservacao(entrada: {
-    ordem_servico_id?: string;
-    cliente_id?: string;
-    fatura_id?: string;
+    ordem_servico_id?: number;
+    cliente_id?: number;
+    fatura_id?: number;
     chave_s3: string;
     nome_arquivo: string;
     tipo_mime: string;
@@ -390,7 +390,7 @@ export class ServicoUploads {
     }
   }
 
-  private async validarOrdemServicoAtiva(id: string): Promise<void> {
+  private async validarOrdemServicoAtiva(id: number): Promise<void> {
     const ordem = await this.prisma.ordemServico.findUnique({
       where: { id },
       select: { id: true, ativo: true, data_exclusao: true },
@@ -401,7 +401,7 @@ export class ServicoUploads {
     }
   }
 
-  private async validarClienteAtivo(id: string): Promise<void> {
+  private async validarClienteAtivo(id: number): Promise<void> {
     const cliente = await this.prisma.cliente.findUnique({
       where: { id },
       select: { id: true, ativo: true, data_exclusao: true },
@@ -412,7 +412,7 @@ export class ServicoUploads {
     }
   }
 
-  private async validarFaturaAtiva(id: string): Promise<void> {
+  private async validarFaturaAtiva(id: number): Promise<void> {
     const fatura = await this.prisma.fatura.findUnique({
       where: { id },
       select: { id: true, ativo: true, data_exclusao: true },
@@ -426,10 +426,10 @@ export class ServicoUploads {
   private validarCompatibilidadeIntencao(
     intencao: {
       tipo_destino: string;
-      ordem_servico_id: string | null;
-      item_ordem_servico_id: string | null;
-      cliente_id: string | null;
-      fatura_id: string | null;
+      ordem_servico_id: number | null;
+      item_ordem_servico_id: number | null;
+      cliente_id: number | null;
+      fatura_id: number | null;
       nome_arquivo: string;
       tipo_mime: string;
     },
@@ -540,7 +540,7 @@ export class ServicoUploads {
       .toLowerCase();
   }
 
-  private exigir(valor: string | undefined, campo: string): asserts valor is string {
+  private exigir(valor: number | undefined, campo: string): asserts valor is number {
     if (!valor) {
       throw new BadRequestException(`O campo ${campo} e obrigatorio para este upload.`);
     }

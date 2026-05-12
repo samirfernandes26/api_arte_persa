@@ -8,7 +8,7 @@ import { AtualizarServicoDto } from './dto/atualizar-servico.dto';
 export class ServicosService {
   constructor(private readonly prisma: ServicoPrisma) {}
 
-  async criar(dto: CriarServicoDto, usuarioId: string) {
+  async criar(dto: CriarServicoDto, usuarioId: number) {
     return this.prisma.servicoCatalogo.create({
       data: {
         nome: dto.nome,
@@ -44,7 +44,7 @@ export class ServicosService {
     });
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: number) {
     const servico = await this.prisma.servicoCatalogo.findUnique({ where: { id } });
     if (!servico || !servico.ativo || servico.data_exclusao) {
       throw new NotFoundException('Servico nao encontrado.');
@@ -53,7 +53,7 @@ export class ServicosService {
     return servico;
   }
 
-  async atualizar(id: string, dto: AtualizarServicoDto, usuarioId: string) {
+  async atualizar(id: number, dto: AtualizarServicoDto, usuarioId: number) {
     await this.buscarPorId(id);
     return this.prisma.servicoCatalogo.update({
       where: { id },

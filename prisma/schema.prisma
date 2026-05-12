@@ -115,41 +115,41 @@ enum MetodoPagamento {
 }
 
 model Usuario {
-  id                                 String                         @id @default(uuid()) @db.Char(36)
-  nome                               String                         @db.VarChar(150)
-  email                              String                         @unique @db.VarChar(191)
-  senha_hash                         String                         @db.VarChar(255)
-  perfil                             PerfilUsuario                  @default(funcionario)
-  ativo                              Boolean                        @default(true)
-  ultimo_login_em                    DateTime?
-  data_criacao                       DateTime                       @default(now())
-  data_atualizacao                   DateTime                       @updatedAt
-  data_exclusao                      DateTime?
-  tokens_refresh                     TokenRefresh[]
-  clientes_criados                   Cliente[]                      @relation("cliente_criado_por")
-  clientes_atualizados               Cliente[]                      @relation("cliente_atualizado_por")
-  servicos_criados                   ServicoCatalogo[]              @relation("servico_criado_por")
-  servicos_atualizados               ServicoCatalogo[]              @relation("servico_atualizado_por")
-  ordens_criadas                     OrdemServico[]                 @relation("ordem_criada_por")
-  ordens_atualizadas                 OrdemServico[]                 @relation("ordem_atualizada_por")
-  ordens_responsavel                 OrdemServico[]                 @relation("ordem_responsavel")
-  ordens_desconto_aprovado           OrdemServico[]                 @relation("ordem_desconto_aprovado_por")
-  itens_criados                      ItemOrdemServico[]             @relation("item_criado_por")
-  itens_atualizados                  ItemOrdemServico[]             @relation("item_atualizado_por")
-  historicos_status                  HistoricoStatusOrdemServico[]  @relation("historico_status_usuario")
-  observacoes_criadas                Observacao[]                   @relation("observacao_criada_por")
-  observacoes_atualizadas            Observacao[]                   @relation("observacao_atualizada_por")
-  faturas_criadas                    Fatura[]                       @relation("fatura_criada_por")
-  faturas_atualizadas                Fatura[]                       @relation("fatura_atualizada_por")
-  arquivos_cliente_criados           ArquivoCliente[]               @relation("arquivo_cliente_criado_por")
-  imagens_ordem_criadas              ImagemOrdemServico[]           @relation("imagem_ordem_criada_por")
-  contatos_cliente_criados           ContatoCliente[]               @relation("contato_cliente_criado_por")
-  contatos_cliente_atualizados       ContatoCliente[]               @relation("contato_cliente_atualizado_por")
-  enderecos_cliente_criados          EnderecoCliente[]              @relation("endereco_cliente_criado_por")
-  enderecos_cliente_atualizados      EnderecoCliente[]              @relation("endereco_cliente_atualizado_por")
-  imagens_observacao_criadas         ImagemObservacao[]             @relation("imagem_observacao_criada_por")
-  imagens_observacao_atualizadas     ImagemObservacao[]             @relation("imagem_observacao_atualizada_por")
-  intencoes_upload_solicitadas       IntencaoUpload[]               @relation("intencao_upload_solicitada_por")
+  id                             Int                           @id @default(autoincrement())
+  nome                           String                        @db.VarChar(150)
+  email                          String                        @unique @db.VarChar(191)
+  senha_hash                     String                        @db.VarChar(255)
+  perfil                         PerfilUsuario                 @default(funcionario)
+  ativo                          Boolean                       @default(true)
+  ultimo_login_em                DateTime?
+  data_criacao                   DateTime                      @default(now())
+  data_atualizacao               DateTime                      @updatedAt
+  data_exclusao                  DateTime?
+  tokens_refresh                 TokenRefresh[]
+  clientes_criados               Cliente[]                     @relation("cliente_criado_por")
+  clientes_atualizados           Cliente[]                     @relation("cliente_atualizado_por")
+  servicos_criados               ServicoCatalogo[]             @relation("servico_criado_por")
+  servicos_atualizados           ServicoCatalogo[]             @relation("servico_atualizado_por")
+  ordens_criadas                 OrdemServico[]                @relation("ordem_criada_por")
+  ordens_atualizadas             OrdemServico[]                @relation("ordem_atualizada_por")
+  ordens_responsavel             OrdemServico[]                @relation("ordem_responsavel")
+  ordens_desconto_aprovado       OrdemServico[]                @relation("ordem_desconto_aprovado_por")
+  itens_criados                  ItemOrdemServico[]            @relation("item_criado_por")
+  itens_atualizados              ItemOrdemServico[]            @relation("item_atualizado_por")
+  historicos_status              HistoricoStatusOrdemServico[] @relation("historico_status_usuario")
+  observacoes_criadas            Observacao[]                  @relation("observacao_criada_por")
+  observacoes_atualizadas        Observacao[]                  @relation("observacao_atualizada_por")
+  faturas_criadas                Fatura[]                      @relation("fatura_criada_por")
+  faturas_atualizadas            Fatura[]                      @relation("fatura_atualizada_por")
+  arquivos_cliente_criados       ArquivoCliente[]              @relation("arquivo_cliente_criado_por")
+  imagens_ordem_criadas          ImagemOrdemServico[]          @relation("imagem_ordem_criada_por")
+  contatos_cliente_criados       ContatoCliente[]              @relation("contato_cliente_criado_por")
+  contatos_cliente_atualizados   ContatoCliente[]              @relation("contato_cliente_atualizado_por")
+  enderecos_cliente_criados      EnderecoCliente[]             @relation("endereco_cliente_criado_por")
+  enderecos_cliente_atualizados  EnderecoCliente[]             @relation("endereco_cliente_atualizado_por")
+  imagens_observacao_criadas     ImagemObservacao[]            @relation("imagem_observacao_criada_por")
+  imagens_observacao_atualizadas ImagemObservacao[]            @relation("imagem_observacao_atualizada_por")
+  intencoes_upload_solicitadas   IntencaoUpload[]              @relation("intencao_upload_solicitada_por")
 
   @@index([perfil, ativo])
   @@index([ativo, data_exclusao, data_criacao])
@@ -157,19 +157,19 @@ model Usuario {
 }
 
 model TokenRefresh {
-  id                   String    @id @default(uuid()) @db.Char(36)
-  usuario_id           String    @db.Char(36)
-  hash_token           String    @db.VarChar(255)
-  familia_token        String?   @db.VarChar(100)
-  expira_em            DateTime
-  revogado_em          DateTime?
-  ip_origem            String?   @db.VarChar(100)
-  agente_usuario       String?   @db.VarChar(255)
-  ativo                Boolean   @default(true)
-  data_criacao         DateTime  @default(now())
-  data_atualizacao     DateTime  @updatedAt
-  data_exclusao        DateTime?
-  usuario              Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id               Int       @id @default(autoincrement())
+  usuario_id       Int
+  hash_token       String    @db.VarChar(255)
+  familia_token    String?   @db.VarChar(100)
+  expira_em        DateTime
+  revogado_em      DateTime?
+  ip_origem        String?   @db.VarChar(100)
+  agente_usuario   String?   @db.VarChar(255)
+  ativo            Boolean   @default(true)
+  data_criacao     DateTime  @default(now())
+  data_atualizacao DateTime  @updatedAt
+  data_exclusao    DateTime?
+  usuario          Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([usuario_id, expira_em])
   @@index([ativo, revogado_em, expira_em])
@@ -177,29 +177,29 @@ model TokenRefresh {
 }
 
 model Cliente {
-  id                              String             @id @default(uuid()) @db.Char(36)
-  tipo_pessoa                     TipoPessoaCliente
-  documento                       String?            @db.Text
-  documento_hash                  String?            @unique @db.Char(64)
-  nome_razao_social               String             @db.VarChar(191)
-  nome_fantasia_apelido           String?            @db.VarChar(191)
-  email_principal                 String?            @db.Text
-  telefone_principal              String?            @db.Text
-  observacoes_internas            String?            @db.Text
-  criado_por_id                   String?            @db.Char(36)
-  atualizado_por_id               String?            @db.Char(36)
-  ativo                           Boolean            @default(true)
-  data_criacao                    DateTime           @default(now())
-  data_atualizacao                DateTime           @updatedAt
-  data_exclusao                   DateTime?
-  criado_por                      Usuario?           @relation("cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?           @relation("cliente_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  contatos                        ContatoCliente[]
-  enderecos                       EnderecoCliente[]
-  arquivos                        ArquivoCliente[]
-  ordens_servico                  OrdemServico[]
-  observacoes                     Observacao[]
-  intencoes_upload                IntencaoUpload[]
+  id                    Int               @id @default(autoincrement())
+  tipo_pessoa           TipoPessoaCliente
+  documento             String?           @db.Text
+  documento_hash        String?           @unique @db.Char(64)
+  nome_razao_social     String            @db.VarChar(191)
+  nome_fantasia_apelido String?           @db.VarChar(191)
+  email_principal       String?           @db.Text
+  telefone_principal    String?           @db.Text
+  observacoes_internas  String?           @db.Text
+  criado_por_id         Int?
+  atualizado_por_id     Int?
+  ativo                 Boolean           @default(true)
+  data_criacao          DateTime          @default(now())
+  data_atualizacao      DateTime          @updatedAt
+  data_exclusao         DateTime?
+  criado_por            Usuario?          @relation("cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por        Usuario?          @relation("cliente_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  contatos              ContatoCliente[]
+  enderecos             EnderecoCliente[]
+  arquivos              ArquivoCliente[]
+  ordens_servico        OrdemServico[]
+  observacoes           Observacao[]
+  intencoes_upload      IntencaoUpload[]
 
   @@index([tipo_pessoa, ativo])
   @@index([documento_hash])
@@ -208,24 +208,24 @@ model Cliente {
 }
 
 model ContatoCliente {
-  id                              String             @id @default(uuid()) @db.Char(36)
-  cliente_id                      String             @db.Char(36)
-  criado_por_id                   String?            @db.Char(36)
-  atualizado_por_id               String?            @db.Char(36)
-  nome                            String             @db.VarChar(150)
-  setor                           String?            @db.VarChar(100)
-  cargo                           String?            @db.VarChar(100)
-  tipo_contato                    TipoContatoCliente
-  valor                           String             @db.Text
-  principal                       Boolean            @default(false)
-  observacoes                     String?            @db.Text
-  ativo                           Boolean            @default(true)
-  data_criacao                    DateTime           @default(now())
-  data_atualizacao                DateTime           @updatedAt
-  data_exclusao                   DateTime?
-  cliente                         Cliente            @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                      Usuario?           @relation("contato_cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?           @relation("contato_cliente_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id                Int                @id @default(autoincrement())
+  cliente_id        Int
+  criado_por_id     Int?
+  atualizado_por_id Int?
+  nome              String             @db.VarChar(150)
+  setor             String?            @db.VarChar(100)
+  cargo             String?            @db.VarChar(100)
+  tipo_contato      TipoContatoCliente
+  valor             String             @db.Text
+  principal         Boolean            @default(false)
+  observacoes       String?            @db.Text
+  ativo             Boolean            @default(true)
+  data_criacao      DateTime           @default(now())
+  data_atualizacao  DateTime           @updatedAt
+  data_exclusao     DateTime?
+  cliente           Cliente            @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por        Usuario?           @relation("contato_cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por    Usuario?           @relation("contato_cliente_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([cliente_id, principal])
   @@index([cliente_id, ativo, data_exclusao])
@@ -233,32 +233,32 @@ model ContatoCliente {
 }
 
 model EnderecoCliente {
-  id                              String              @id @default(uuid()) @db.Char(36)
-  cliente_id                      String              @db.Char(36)
-  criado_por_id                   String?             @db.Char(36)
-  atualizado_por_id               String?             @db.Char(36)
-  tipo_endereco                   TipoEnderecoCliente
-  rotulo                          String?             @db.VarChar(120)
-  destinatario                    String?             @db.VarChar(150)
-  cep                             String?             @db.VarChar(20)
-  logradouro                      String              @db.VarChar(191)
-  numero                          String?             @db.VarChar(30)
-  complemento                     String?             @db.VarChar(120)
-  bairro                          String?             @db.VarChar(120)
-  cidade                          String              @db.VarChar(120)
-  estado                          String              @db.VarChar(2)
-  pais                            String              @default("BR") @db.VarChar(2)
-  referencia                      String?             @db.VarChar(191)
-  principal                       Boolean             @default(false)
-  latitude                        Decimal?            @db.Decimal(10, 7)
-  longitude                       Decimal?            @db.Decimal(10, 7)
-  ativo                           Boolean             @default(true)
-  data_criacao                    DateTime            @default(now())
-  data_atualizacao                DateTime            @updatedAt
-  data_exclusao                   DateTime?
-  cliente                         Cliente             @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                      Usuario?            @relation("endereco_cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?            @relation("endereco_cliente_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id                Int                 @id @default(autoincrement())
+  cliente_id        Int
+  criado_por_id     Int?
+  atualizado_por_id Int?
+  tipo_endereco     TipoEnderecoCliente
+  rotulo            String?             @db.VarChar(120)
+  destinatario      String?             @db.VarChar(150)
+  cep               String?             @db.VarChar(20)
+  logradouro        String              @db.VarChar(191)
+  numero            String?             @db.VarChar(30)
+  complemento       String?             @db.VarChar(120)
+  bairro            String?             @db.VarChar(120)
+  cidade            String              @db.VarChar(120)
+  estado            String              @db.VarChar(2)
+  pais              String              @default("BR") @db.VarChar(2)
+  referencia        String?             @db.VarChar(191)
+  principal         Boolean             @default(false)
+  latitude          Decimal?            @db.Decimal(10, 7)
+  longitude         Decimal?            @db.Decimal(10, 7)
+  ativo             Boolean             @default(true)
+  data_criacao      DateTime            @default(now())
+  data_atualizacao  DateTime            @updatedAt
+  data_exclusao     DateTime?
+  cliente           Cliente             @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por        Usuario?            @relation("endereco_cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por    Usuario?            @relation("endereco_cliente_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([cliente_id, principal])
   @@index([cliente_id, ativo, data_exclusao])
@@ -266,21 +266,21 @@ model EnderecoCliente {
 }
 
 model ArquivoCliente {
-  id                              String              @id @default(uuid()) @db.Char(36)
-  cliente_id                       String              @db.Char(36)
-  criado_por_id                    String?             @db.Char(36)
-  chave_s3                         String              @db.VarChar(500)
-  url_arquivo                      String?             @db.VarChar(1000)
-  nome_arquivo                     String              @db.VarChar(191)
-  tipo_mime                        String              @db.VarChar(120)
-  tamanho_bytes                    Int
-  rotulo                           String?             @db.VarChar(120)
-  ativo                            Boolean             @default(true)
-  data_criacao                     DateTime            @default(now())
-  data_atualizacao                 DateTime            @updatedAt
-  data_exclusao                    DateTime?
-  cliente                          Cliente             @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                       Usuario?            @relation("arquivo_cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id               Int       @id @default(autoincrement())
+  cliente_id       Int
+  criado_por_id    Int?
+  chave_s3         String    @db.VarChar(500)
+  url_arquivo      String?   @db.VarChar(1000)
+  nome_arquivo     String    @db.VarChar(191)
+  tipo_mime        String    @db.VarChar(120)
+  tamanho_bytes    Int
+  rotulo           String?   @db.VarChar(120)
+  ativo            Boolean   @default(true)
+  data_criacao     DateTime  @default(now())
+  data_atualizacao DateTime  @updatedAt
+  data_exclusao    DateTime?
+  cliente          Cliente   @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por       Usuario?  @relation("arquivo_cliente_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([cliente_id, data_criacao])
   @@index([cliente_id, ativo, data_exclusao])
@@ -288,22 +288,22 @@ model ArquivoCliente {
 }
 
 model ServicoCatalogo {
-  id                              String                 @id @default(uuid()) @db.Char(36)
-  nome                            String                 @db.VarChar(191)
-  descricao                       String?                @db.Text
-  categoria                       String?                @db.VarChar(120)
-  preco_base                      Decimal                @db.Decimal(12, 2)
-  unidade_cobranca                UnidadeCobrancaServico @default(unidade)
-  prazo_medio_dias                Int?
-  criado_por_id                   String?                @db.Char(36)
-  atualizado_por_id               String?                @db.Char(36)
-  ativo                           Boolean                @default(true)
-  data_criacao                    DateTime               @default(now())
-  data_atualizacao                DateTime               @updatedAt
-  data_exclusao                   DateTime?
-  criado_por                      Usuario?               @relation("servico_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?               @relation("servico_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  servicos_executados_item        ServicoExecutadoItem[]
+  id                       Int                    @id @default(autoincrement())
+  nome                     String                 @db.VarChar(191)
+  descricao                String?                @db.Text
+  categoria                String?                @db.VarChar(120)
+  preco_base               Decimal                @db.Decimal(12, 2)
+  unidade_cobranca         UnidadeCobrancaServico @default(unidade)
+  prazo_medio_dias         Int?
+  criado_por_id            Int?
+  atualizado_por_id        Int?
+  ativo                    Boolean                @default(true)
+  data_criacao             DateTime               @default(now())
+  data_atualizacao         DateTime               @updatedAt
+  data_exclusao            DateTime?
+  criado_por               Usuario?               @relation("servico_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por           Usuario?               @relation("servico_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  servicos_executados_item ServicoExecutadoItem[]
 
   @@index([nome, ativo])
   @@index([ativo, data_exclusao, data_criacao])
@@ -311,52 +311,52 @@ model ServicoCatalogo {
 }
 
 model OrdemServico {
-  id                              String                         @id @default(uuid()) @db.Char(36)
-  codigo                          String                         @unique @db.VarChar(40)
-  cliente_id                      String                         @db.Char(36)
-  criado_por_id                   String                         @db.Char(36)
-  atualizado_por_id               String?                        @db.Char(36)
-  responsavel_id                  String?                        @db.Char(36)
-  aprovado_por_desconto_id        String?                        @db.Char(36)
-  status                          StatusOrdemServico             @default(aberta)
-  canal_entrada                   CanalEntradaOrdemServico       @default(presencial)
-  agendada_coleta_em              DateTime?
-  agendada_entrega_em             DateTime?
-  iniciada_em                     DateTime?
-  finalizada_em                   DateTime?
-  cancelada_em                    DateTime?
-  snapshot_endereco_coleta        Json?
-  snapshot_endereco_entrega       Json?
-  snapshot_cliente                Json?
-  snapshot_politica_desconto      Json?
-  percentual_desconto             Decimal                        @default(0) @db.Decimal(5, 2)
-  valor_desconto                  Decimal                        @default(0) @db.Decimal(12, 2)
-  valor_frete                     Decimal                        @default(0) @db.Decimal(12, 2)
-  valor_subtotal                  Decimal                        @db.Decimal(12, 2)
-  valor_total                     Decimal                        @db.Decimal(12, 2)
-  motivo_desconto                 String?                        @db.Text
-  observacoes_internas            String?                        @db.Text
-  observacoes_cliente             String?                        @db.Text
-  chave_assinatura_cliente        String?                        @db.VarChar(500)
-  url_assinatura_cliente          String?                        @db.VarChar(1000)
-  assinada_em                     DateTime?
-  chave_pdf                       String?                        @db.VarChar(500)
-  url_pdf                         String?                        @db.VarChar(1000)
-  ativo                           Boolean                        @default(true)
-  data_criacao                    DateTime                       @default(now())
-  data_atualizacao                DateTime                       @updatedAt
-  data_exclusao                   DateTime?
-  cliente                         Cliente                        @relation(fields: [cliente_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  criado_por                      Usuario                        @relation("ordem_criada_por", fields: [criado_por_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  atualizado_por                  Usuario?                       @relation("ordem_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  responsavel                     Usuario?                       @relation("ordem_responsavel", fields: [responsavel_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  aprovado_por_desconto           Usuario?                       @relation("ordem_desconto_aprovado_por", fields: [aprovado_por_desconto_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  itens                           ItemOrdemServico[]
-  historico_status                HistoricoStatusOrdemServico[]
-  observacoes                     Observacao[]
-  imagens                         ImagemOrdemServico[]
-  fatura                          Fatura?
-  intencoes_upload                IntencaoUpload[]
+  id                         Int                           @id @default(autoincrement())
+  codigo                     String                        @unique @db.VarChar(40)
+  cliente_id                 Int
+  criado_por_id              Int
+  atualizado_por_id          Int?
+  responsavel_id             Int?
+  aprovado_por_desconto_id   Int?
+  status                     StatusOrdemServico            @default(aberta)
+  canal_entrada              CanalEntradaOrdemServico      @default(presencial)
+  agendada_coleta_em         DateTime?
+  agendada_entrega_em        DateTime?
+  iniciada_em                DateTime?
+  finalizada_em              DateTime?
+  cancelada_em               DateTime?
+  snapshot_endereco_coleta   Json?
+  snapshot_endereco_entrega  Json?
+  snapshot_cliente           Json?
+  snapshot_politica_desconto Json?
+  percentual_desconto        Decimal                       @default(0) @db.Decimal(5, 2)
+  valor_desconto             Decimal                       @default(0) @db.Decimal(12, 2)
+  valor_frete                Decimal                       @default(0) @db.Decimal(12, 2)
+  valor_subtotal             Decimal                       @db.Decimal(12, 2)
+  valor_total                Decimal                       @db.Decimal(12, 2)
+  motivo_desconto            String?                       @db.Text
+  observacoes_internas       String?                       @db.Text
+  observacoes_cliente        String?                       @db.Text
+  chave_assinatura_cliente   String?                       @db.VarChar(500)
+  url_assinatura_cliente     String?                       @db.VarChar(1000)
+  assinada_em                DateTime?
+  chave_pdf                  String?                       @db.VarChar(500)
+  url_pdf                    String?                       @db.VarChar(1000)
+  ativo                      Boolean                       @default(true)
+  data_criacao               DateTime                      @default(now())
+  data_atualizacao           DateTime                      @updatedAt
+  data_exclusao              DateTime?
+  cliente                    Cliente                       @relation(fields: [cliente_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  criado_por                 Usuario                       @relation("ordem_criada_por", fields: [criado_por_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  atualizado_por             Usuario?                      @relation("ordem_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  responsavel                Usuario?                      @relation("ordem_responsavel", fields: [responsavel_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  aprovado_por_desconto      Usuario?                      @relation("ordem_desconto_aprovado_por", fields: [aprovado_por_desconto_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  itens                      ItemOrdemServico[]
+  historico_status           HistoricoStatusOrdemServico[]
+  observacoes                Observacao[]
+  imagens                    ImagemOrdemServico[]
+  fatura                     Fatura?
+  intencoes_upload           IntencaoUpload[]
 
   @@index([cliente_id, data_criacao])
   @@index([status, agendada_coleta_em])
@@ -366,39 +366,39 @@ model OrdemServico {
 }
 
 model ItemOrdemServico {
-  id                              String               @id @default(uuid()) @db.Char(36)
-  ordem_servico_id                String               @db.Char(36)
-  criado_por_id                   String?              @db.Char(36)
-  atualizado_por_id               String?              @db.Char(36)
-  descricao                       String               @db.VarChar(191)
-  categoria                       CategoriaItem
-  material                        MaterialItem?
-  quantidade                      Int                  @default(1)
-  largura_cm                      Decimal?             @db.Decimal(8, 2)
-  altura_cm                       Decimal?             @db.Decimal(8, 2)
-  profundidade_cm                 Decimal?             @db.Decimal(8, 2)
-  area_m2                         Decimal?             @db.Decimal(10, 4)
-  valor_declarado                 Decimal?             @db.Decimal(12, 2)
-  estado_atual                    String?              @db.Text
-  cuidados_especiais              String?              @db.Text
-  valor_unitario_base             Decimal              @db.Decimal(12, 2)
-  valor_unitario_desconto         Decimal              @default(0) @db.Decimal(12, 2)
-  valor_unitario_final            Decimal              @db.Decimal(12, 2)
-  valor_total_bruto               Decimal              @db.Decimal(12, 2)
-  valor_total_desconto            Decimal              @default(0) @db.Decimal(12, 2)
-  valor_total_final               Decimal              @db.Decimal(12, 2)
-  chave_foto_inicial              String?              @db.VarChar(500)
-  url_foto_inicial                String?              @db.VarChar(1000)
-  ativo                           Boolean              @default(true)
-  data_criacao                    DateTime             @default(now())
-  data_atualizacao                DateTime             @updatedAt
-  data_exclusao                   DateTime?
-  ordem_servico                   OrdemServico         @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                      Usuario?             @relation("item_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?             @relation("item_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  servicos_executados             ServicoExecutadoItem[]
-  observacoes                     Observacao[]
-  intencoes_upload                IntencaoUpload[]
+  id                      Int                    @id @default(autoincrement())
+  ordem_servico_id        Int
+  criado_por_id           Int?
+  atualizado_por_id       Int?
+  descricao               String                 @db.VarChar(191)
+  categoria               CategoriaItem
+  material                MaterialItem?
+  quantidade              Int                    @default(1)
+  largura_cm              Decimal?               @db.Decimal(8, 2)
+  altura_cm               Decimal?               @db.Decimal(8, 2)
+  profundidade_cm         Decimal?               @db.Decimal(8, 2)
+  area_m2                 Decimal?               @db.Decimal(10, 4)
+  valor_declarado         Decimal?               @db.Decimal(12, 2)
+  estado_atual            String?                @db.Text
+  cuidados_especiais      String?                @db.Text
+  valor_unitario_base     Decimal                @db.Decimal(12, 2)
+  valor_unitario_desconto Decimal                @default(0) @db.Decimal(12, 2)
+  valor_unitario_final    Decimal                @db.Decimal(12, 2)
+  valor_total_bruto       Decimal                @db.Decimal(12, 2)
+  valor_total_desconto    Decimal                @default(0) @db.Decimal(12, 2)
+  valor_total_final       Decimal                @db.Decimal(12, 2)
+  chave_foto_inicial      String?                @db.VarChar(500)
+  url_foto_inicial        String?                @db.VarChar(1000)
+  ativo                   Boolean                @default(true)
+  data_criacao            DateTime               @default(now())
+  data_atualizacao        DateTime               @updatedAt
+  data_exclusao           DateTime?
+  ordem_servico           OrdemServico           @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por              Usuario?               @relation("item_criado_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por          Usuario?               @relation("item_atualizado_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  servicos_executados     ServicoExecutadoItem[]
+  observacoes             Observacao[]
+  intencoes_upload        IntencaoUpload[]
 
   @@index([ordem_servico_id, categoria])
   @@index([ordem_servico_id, ativo, data_exclusao])
@@ -406,23 +406,23 @@ model ItemOrdemServico {
 }
 
 model ServicoExecutadoItem {
-  id                              String                 @id @default(uuid()) @db.Char(36)
-  item_ordem_servico_id           String                 @db.Char(36)
-  servico_catalogo_id             String?                @db.Char(36)
-  nome_servico_snapshot           String                 @db.VarChar(191)
-  categoria_servico_snapshot      String?                @db.VarChar(120)
-  unidade_cobranca_snapshot       UnidadeCobrancaServico
-  valor_unitario_snapshot         Decimal                @db.Decimal(12, 2)
-  quantidade                      Decimal                @default(1) @db.Decimal(10, 2)
-  valor_desconto                  Decimal                @default(0) @db.Decimal(12, 2)
-  valor_total                     Decimal                @db.Decimal(12, 2)
-  observacoes                     String?                @db.Text
-  ativo                           Boolean                @default(true)
-  data_criacao                    DateTime               @default(now())
-  data_atualizacao                DateTime               @updatedAt
-  data_exclusao                   DateTime?
-  item_ordem_servico              ItemOrdemServico       @relation(fields: [item_ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  servico_catalogo                ServicoCatalogo?       @relation(fields: [servico_catalogo_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id                         Int                    @id @default(autoincrement())
+  item_ordem_servico_id      Int
+  servico_catalogo_id        Int?
+  nome_servico_snapshot      String                 @db.VarChar(191)
+  categoria_servico_snapshot String?                @db.VarChar(120)
+  unidade_cobranca_snapshot  UnidadeCobrancaServico
+  valor_unitario_snapshot    Decimal                @db.Decimal(12, 2)
+  quantidade                 Decimal                @default(1) @db.Decimal(10, 2)
+  valor_desconto             Decimal                @default(0) @db.Decimal(12, 2)
+  valor_total                Decimal                @db.Decimal(12, 2)
+  observacoes                String?                @db.Text
+  ativo                      Boolean                @default(true)
+  data_criacao               DateTime               @default(now())
+  data_atualizacao           DateTime               @updatedAt
+  data_exclusao              DateTime?
+  item_ordem_servico         ItemOrdemServico       @relation(fields: [item_ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  servico_catalogo           ServicoCatalogo?       @relation(fields: [servico_catalogo_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([item_ordem_servico_id])
   @@index([item_ordem_servico_id, ativo, data_exclusao])
@@ -430,19 +430,19 @@ model ServicoExecutadoItem {
 }
 
 model HistoricoStatusOrdemServico {
-  id                              String               @id @default(uuid()) @db.Char(36)
-  ordem_servico_id                String               @db.Char(36)
-  usuario_id                      String               @db.Char(36)
-  status_origem                   StatusOrdemServico?
-  status_destino                  StatusOrdemServico
-  motivo                          String?              @db.Text
-  metadados                       Json?
-  ativo                           Boolean              @default(true)
-  data_criacao                    DateTime             @default(now())
-  data_atualizacao                DateTime             @updatedAt
-  data_exclusao                   DateTime?
-  ordem_servico                   OrdemServico         @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  usuario                         Usuario              @relation("historico_status_usuario", fields: [usuario_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id               Int                 @id @default(autoincrement())
+  ordem_servico_id Int
+  usuario_id       Int
+  status_origem    StatusOrdemServico?
+  status_destino   StatusOrdemServico
+  motivo           String?             @db.Text
+  metadados        Json?
+  ativo            Boolean             @default(true)
+  data_criacao     DateTime            @default(now())
+  data_atualizacao DateTime            @updatedAt
+  data_exclusao    DateTime?
+  ordem_servico    OrdemServico        @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario          Usuario             @relation("historico_status_usuario", fields: [usuario_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([ordem_servico_id, data_criacao])
   @@index([usuario_id, data_criacao])
@@ -450,22 +450,22 @@ model HistoricoStatusOrdemServico {
 }
 
 model ImagemOrdemServico {
-  id                              String               @id @default(uuid()) @db.Char(36)
-  ordem_servico_id                String               @db.Char(36)
-  criado_por_id                   String?              @db.Char(36)
-  chave_s3                        String               @db.VarChar(500)
-  url_arquivo                     String?              @db.VarChar(1000)
-  nome_arquivo                    String               @db.VarChar(191)
-  tipo_mime                       String               @db.VarChar(120)
-  tamanho_bytes                   Int
-  ordem_exibicao                  Int                  @default(0)
-  rotulo                          String?              @db.VarChar(120)
-  ativo                           Boolean              @default(true)
-  data_criacao                    DateTime             @default(now())
-  data_atualizacao                DateTime             @updatedAt
-  data_exclusao                   DateTime?
-  ordem_servico                   OrdemServico         @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                      Usuario?             @relation("imagem_ordem_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id               Int          @id @default(autoincrement())
+  ordem_servico_id Int
+  criado_por_id    Int?
+  chave_s3         String       @db.VarChar(500)
+  url_arquivo      String?      @db.VarChar(1000)
+  nome_arquivo     String       @db.VarChar(191)
+  tipo_mime        String       @db.VarChar(120)
+  tamanho_bytes    Int
+  ordem_exibicao   Int          @default(0)
+  rotulo           String?      @db.VarChar(120)
+  ativo            Boolean      @default(true)
+  data_criacao     DateTime     @default(now())
+  data_atualizacao DateTime     @updatedAt
+  data_exclusao    DateTime?
+  ordem_servico    OrdemServico @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por       Usuario?     @relation("imagem_ordem_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([ordem_servico_id, ordem_exibicao])
   @@index([ordem_servico_id, ativo, data_exclusao])
@@ -473,28 +473,28 @@ model ImagemOrdemServico {
 }
 
 model Observacao {
-  id                              String               @id @default(uuid()) @db.Char(36)
-  tipo_alvo                       TipoAlvoObservacao
-  ordem_servico_id                String?              @db.Char(36)
-  item_ordem_servico_id           String?              @db.Char(36)
-  cliente_id                      String?              @db.Char(36)
-  fatura_id                       String?              @db.Char(36)
-  criado_por_id                   String?              @db.Char(36)
-  atualizado_por_id               String?              @db.Char(36)
-  visibilidade                    VisibilidadeObservacao @default(interna)
-  titulo                          String?              @db.VarChar(191)
-  conteudo                        String               @db.Text
-  ativo                           Boolean              @default(true)
-  data_criacao                    DateTime             @default(now())
-  data_atualizacao                DateTime             @updatedAt
-  data_exclusao                   DateTime?
-  ordem_servico                   OrdemServico?        @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  item_ordem_servico              ItemOrdemServico?    @relation(fields: [item_ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  cliente                         Cliente?             @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  fatura                          Fatura?              @relation(fields: [fatura_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                      Usuario?             @relation("observacao_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?             @relation("observacao_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  imagens                         ImagemObservacao[]
+  id                    Int                    @id @default(autoincrement())
+  tipo_alvo             TipoAlvoObservacao
+  ordem_servico_id      Int?
+  item_ordem_servico_id Int?
+  cliente_id            Int?
+  fatura_id             Int?
+  criado_por_id         Int?
+  atualizado_por_id     Int?
+  visibilidade          VisibilidadeObservacao @default(interna)
+  titulo                String?                @db.VarChar(191)
+  conteudo              String                 @db.Text
+  ativo                 Boolean                @default(true)
+  data_criacao          DateTime               @default(now())
+  data_atualizacao      DateTime               @updatedAt
+  data_exclusao         DateTime?
+  ordem_servico         OrdemServico?          @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  item_ordem_servico    ItemOrdemServico?      @relation(fields: [item_ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  cliente               Cliente?               @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fatura                Fatura?                @relation(fields: [fatura_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por            Usuario?               @relation("observacao_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por        Usuario?               @relation("observacao_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  imagens               ImagemObservacao[]
 
   @@index([tipo_alvo, data_criacao])
   @@index([ordem_servico_id])
@@ -506,23 +506,23 @@ model Observacao {
 }
 
 model ImagemObservacao {
-  id                              String               @id @default(uuid()) @db.Char(36)
-  observacao_id                   String               @db.Char(36)
-  criado_por_id                   String?              @db.Char(36)
-  atualizado_por_id               String?              @db.Char(36)
-  chave_s3                        String               @db.VarChar(500)
-  url_arquivo                     String?              @db.VarChar(1000)
-  nome_arquivo                    String               @db.VarChar(191)
-  tipo_mime                       String               @db.VarChar(120)
-  tamanho_bytes                   Int
-  posicao                         Int
-  ativo                           Boolean              @default(true)
-  data_criacao                    DateTime             @default(now())
-  data_atualizacao                DateTime             @updatedAt
-  data_exclusao                   DateTime?
-  observacao                      Observacao           @relation(fields: [observacao_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                      Usuario?             @relation("imagem_observacao_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?             @relation("imagem_observacao_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id                Int        @id @default(autoincrement())
+  observacao_id     Int
+  criado_por_id     Int?
+  atualizado_por_id Int?
+  chave_s3          String     @db.VarChar(500)
+  url_arquivo       String?    @db.VarChar(1000)
+  nome_arquivo      String     @db.VarChar(191)
+  tipo_mime         String     @db.VarChar(120)
+  tamanho_bytes     Int
+  posicao           Int
+  ativo             Boolean    @default(true)
+  data_criacao      DateTime   @default(now())
+  data_atualizacao  DateTime   @updatedAt
+  data_exclusao     DateTime?
+  observacao        Observacao @relation(fields: [observacao_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por        Usuario?   @relation("imagem_observacao_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por    Usuario?   @relation("imagem_observacao_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@unique([observacao_id, posicao])
   @@index([observacao_id, ativo, data_exclusao])
@@ -530,32 +530,32 @@ model ImagemObservacao {
 }
 
 model Fatura {
-  id                              String               @id @default(uuid()) @db.Char(36)
-  ordem_servico_id                String               @unique @db.Char(36)
-  numero                          String               @unique @db.VarChar(50)
-  criado_por_id                   String?              @db.Char(36)
-  atualizado_por_id               String?              @db.Char(36)
-  status                          StatusFatura         @default(rascunho)
-  emitida_em                      DateTime?
-  vencimento_em                   DateTime?
-  paga_em                         DateTime?
-  metodo_pagamento                MetodoPagamento?
-  valor_subtotal                  Decimal              @db.Decimal(12, 2)
-  valor_desconto                  Decimal              @default(0) @db.Decimal(12, 2)
-  valor_impostos                  Decimal              @default(0) @db.Decimal(12, 2)
-  valor_total                     Decimal              @db.Decimal(12, 2)
-  observacoes                     String?              @db.Text
-  chave_pdf                       String?              @db.VarChar(500)
-  url_pdf                         String?              @db.VarChar(1000)
-  ativo                           Boolean              @default(true)
-  data_criacao                    DateTime             @default(now())
-  data_atualizacao                DateTime             @updatedAt
-  data_exclusao                   DateTime?
-  ordem_servico                   OrdemServico         @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  criado_por                      Usuario?             @relation("fatura_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  atualizado_por                  Usuario?             @relation("fatura_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  observacoes_relacionadas        Observacao[]
-  intencoes_upload                IntencaoUpload[]
+  id                       Int              @id @default(autoincrement())
+  ordem_servico_id         Int              @unique
+  numero                   String           @unique @db.VarChar(50)
+  criado_por_id            Int?
+  atualizado_por_id        Int?
+  status                   StatusFatura     @default(rascunho)
+  emitida_em               DateTime?
+  vencimento_em            DateTime?
+  paga_em                  DateTime?
+  metodo_pagamento         MetodoPagamento?
+  valor_subtotal           Decimal          @db.Decimal(12, 2)
+  valor_desconto           Decimal          @default(0) @db.Decimal(12, 2)
+  valor_impostos           Decimal          @default(0) @db.Decimal(12, 2)
+  valor_total              Decimal          @db.Decimal(12, 2)
+  observacoes              String?          @db.Text
+  chave_pdf                String?          @db.VarChar(500)
+  url_pdf                  String?          @db.VarChar(1000)
+  ativo                    Boolean          @default(true)
+  data_criacao             DateTime         @default(now())
+  data_atualizacao         DateTime         @updatedAt
+  data_exclusao            DateTime?
+  ordem_servico            OrdemServico     @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  criado_por               Usuario?         @relation("fatura_criada_por", fields: [criado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atualizado_por           Usuario?         @relation("fatura_atualizada_por", fields: [atualizado_por_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  observacoes_relacionadas Observacao[]
+  intencoes_upload         IntencaoUpload[]
 
   @@index([status, vencimento_em])
   @@index([ativo, data_exclusao, data_criacao])
@@ -563,28 +563,28 @@ model Fatura {
 }
 
 model IntencaoUpload {
-  id                              String               @id @default(uuid()) @db.Char(36)
-  chave_s3                        String               @unique @db.VarChar(500)
-  bucket                          String               @db.VarChar(191)
-  tipo_destino                    String               @db.VarChar(80)
-  nome_arquivo                    String               @db.VarChar(191)
-  tipo_mime                       String               @db.VarChar(120)
-  ordem_servico_id                String?              @db.Char(36)
-  item_ordem_servico_id           String?              @db.Char(36)
-  cliente_id                      String?              @db.Char(36)
-  fatura_id                       String?              @db.Char(36)
-  usuario_solicitante_id          String?              @db.Char(36)
-  confirmado_em                   DateTime?
-  expira_em                       DateTime
-  ativo                           Boolean              @default(true)
-  data_criacao                    DateTime             @default(now())
-  data_atualizacao                DateTime             @updatedAt
-  data_exclusao                   DateTime?
-  ordem_servico                   OrdemServico?        @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  item_ordem_servico              ItemOrdemServico?    @relation(fields: [item_ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  cliente                         Cliente?             @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  fatura                          Fatura?              @relation(fields: [fatura_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  usuario_solicitante             Usuario?             @relation("intencao_upload_solicitada_por", fields: [usuario_solicitante_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id                     Int               @id @default(autoincrement())
+  chave_s3               String            @unique @db.VarChar(500)
+  bucket                 String            @db.VarChar(191)
+  tipo_destino           String            @db.VarChar(80)
+  nome_arquivo           String            @db.VarChar(191)
+  tipo_mime              String            @db.VarChar(120)
+  ordem_servico_id       Int?
+  item_ordem_servico_id  Int?
+  cliente_id             Int?
+  fatura_id              Int?
+  usuario_solicitante_id Int?
+  confirmado_em          DateTime?
+  expira_em              DateTime
+  ativo                  Boolean           @default(true)
+  data_criacao           DateTime          @default(now())
+  data_atualizacao       DateTime          @updatedAt
+  data_exclusao          DateTime?
+  ordem_servico          OrdemServico?     @relation(fields: [ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  item_ordem_servico     ItemOrdemServico? @relation(fields: [item_ordem_servico_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  cliente                Cliente?          @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fatura                 Fatura?           @relation(fields: [fatura_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario_solicitante    Usuario?          @relation("intencao_upload_solicitada_por", fields: [usuario_solicitante_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([tipo_destino, ativo, expira_em])
   @@index([ordem_servico_id, tipo_destino])

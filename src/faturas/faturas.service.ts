@@ -112,7 +112,7 @@ export class FaturasService {
     return Promise.all(faturas.map((fatura) => this.descriptografarFatura(fatura)));
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: number) {
     const fatura = await this.prisma.fatura.findUnique({
       where: { id },
       include: this.includeCompleto(),
@@ -126,7 +126,7 @@ export class FaturasService {
   }
 
   async atualizarStatus(
-    id: string,
+    id: number,
     dto: AtualizarStatusFaturaDto,
     usuarioAtual: PayloadAutenticacao,
   ) {

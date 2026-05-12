@@ -1,19 +1,21 @@
 import {
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   Matches,
+  Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { TipoDestinoUpload } from '../../comum/enums/tipo-destino-upload.enum';
 
 /**
  * Exemplo de payload:
  * {
  *   "tipo_destino": "foto_inicial_item",
- *   "ordem_servico_id": "uuid-da-ordem",
- *   "item_ordem_servico_id": "uuid-do-item",
+ *   "ordem_servico_id": 12,
+ *   "item_ordem_servico_id": 33,
  *   "nome_arquivo": "tapete-sala.jpg",
  *   "tipo_mime": "image/jpeg"
  * }
@@ -25,20 +27,28 @@ export class GerarUrlPreAssinadaDto {
   tipo_destino!: TipoDestinoUpload;
 
   @IsOptional()
-  @IsUUID()
-  ordem_servico_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  ordem_servico_id?: number;
 
   @IsOptional()
-  @IsUUID()
-  item_ordem_servico_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  item_ordem_servico_id?: number;
 
   @IsOptional()
-  @IsUUID()
-  cliente_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  cliente_id?: number;
 
   @IsOptional()
-  @IsUUID()
-  fatura_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  fatura_id?: number;
 
   @IsString()
   @IsNotEmpty()

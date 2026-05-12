@@ -7,7 +7,7 @@ import { UsuarioResumidoDto } from '../../usuarios/dto/usuario-response.dto';
 @Exclude()
 export class ClienteResumoFaturaDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   nome_razao_social!: string;
@@ -19,7 +19,7 @@ export class ClienteResumoFaturaDto {
 @Exclude()
 export class OrdemServicoResumoFaturaDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   codigo!: string;
@@ -32,10 +32,10 @@ export class OrdemServicoResumoFaturaDto {
 @Exclude()
 export class FaturaResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
-  ordem_servico_id!: string;
+  ordem_servico_id!: number;
 
   @Expose()
   numero!: string;

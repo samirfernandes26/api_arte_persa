@@ -183,7 +183,7 @@ export class ProcessadorPdf implements OnModuleInit, OnModuleDestroy {
       tipo_conteudo: 'application/pdf',
       cache_control: 'private, max-age=0, no-cache',
       metadados: {
-        ordem_servico_id: job.data.ordem_servico_id,
+        ordem_servico_id: String(job.data.ordem_servico_id),
         codigo_ordem_servico: job.data.codigo_ordem_servico,
       },
     });

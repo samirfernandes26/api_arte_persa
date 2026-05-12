@@ -6,7 +6,7 @@ import { TipoPessoaCliente } from '../../comum/enums/tipo-pessoa-cliente.enum';
 @Exclude()
 export class ContatoClienteResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   nome!: string;
@@ -33,7 +33,7 @@ export class ContatoClienteResponseDto {
 @Exclude()
 export class EnderecoClienteResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   tipo_endereco!: TipoEnderecoCliente;
@@ -72,7 +72,7 @@ export class EnderecoClienteResponseDto {
 @Exclude()
 export class ArquivoClienteResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   chave_s3!: string;
@@ -99,7 +99,7 @@ export class ArquivoClienteResponseDto {
 @Exclude()
 export class ClienteResponseDto {
   @Expose()
-  id!: string;
+  id!: number;
 
   @Expose()
   tipo_pessoa!: TipoPessoaCliente;

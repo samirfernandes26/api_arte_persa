@@ -123,7 +123,7 @@ describe('Integracao - Uploads e S3', () => {
       .set('Authorization', `Bearer ${loginMaster.token_acesso}`)
       .send({
         cliente_id: cliente.body.id,
-        chave_s3: 'clientes/00000000-0000-0000-0000-000000000000/arquivos/falso.pdf',
+        chave_s3: 'clientes/999999/arquivos/falso.pdf',
         nome_arquivo: 'falso.pdf',
         tipo_mime: 'application/pdf',
         tamanho_bytes: 1024,

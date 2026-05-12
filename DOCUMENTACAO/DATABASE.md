@@ -4,7 +4,7 @@
 
 O schema Prisma foi modelado integralmente em Portugues Brasileiro e usa:
 
-- UUID em todas as tabelas
+- IDs inteiros com auto incremento em todas as tabelas
 - `ativo` para soft delete logico
 - `data_criacao`, `data_atualizacao` e `data_exclusao`
 - relacoes auditaveis com `criado_por_id` e `atualizado_por_id` onde faz sentido
@@ -35,7 +35,7 @@ Quase todas as tabelas compartilham o seguinte contrato:
 
 | Campo | Funcao |
 | --- | --- |
-| `id` | UUID da entidade |
+| `id` | Identificador inteiro auto incremento da entidade |
 | `ativo` | Marca se o registro esta ativo |
 | `data_criacao` | Data de criacao |
 | `data_atualizacao` | Atualizado automaticamente pelo Prisma |

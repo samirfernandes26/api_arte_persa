@@ -9,7 +9,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
+  IsInt,
   Max,
   Min,
   ValidateNested,
@@ -21,8 +21,10 @@ import { UnidadeCobrancaServico } from '../../comum/enums/unidade-cobranca-servi
 
 export class CriarServicoExecutadoItemDto {
   @IsOptional()
-  @IsUUID()
-  servico_catalogo_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  servico_catalogo_id?: number;
 
   @IsOptional()
   @IsString()
@@ -122,7 +124,7 @@ export class CriarItemOrdemServicoDto {
 /**
  * Exemplo de payload:
  * {
- *   "cliente_id": "uuid-do-cliente",
+ *   "cliente_id": 27,
  *   "canal_entrada": "whatsapp",
  *   "percentual_desconto": 5,
  *   "valor_frete": 25,
@@ -137,7 +139,7 @@ export class CriarItemOrdemServicoDto {
  *       "altura_cm": 350,
  *       "servicos_executados": [
  *         {
- *           "servico_catalogo_id": "uuid-servico",
+ *           "servico_catalogo_id": 5,
  *           "valor_unitario_snapshot": 800,
  *           "quantidade": 1,
  *           "valor_desconto": 40
@@ -153,20 +155,26 @@ export class CriarItemOrdemServicoDto {
  * - os servicos do item congelam nome/preco no momento da criacao.
  */
 export class CriarOrdemServicoDto {
-  @IsUUID()
-  cliente_id!: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  cliente_id!: number;
 
   @IsOptional()
   @IsEnum(CanalEntradaOrdemServico)
   canal_entrada?: CanalEntradaOrdemServico;
 
   @IsOptional()
-  @IsUUID()
-  responsavel_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  responsavel_id?: number;
 
   @IsOptional()
-  @IsUUID()
-  aprovado_por_desconto_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  aprovado_por_desconto_id?: number;
 
   @IsOptional()
   @Type(() => Number)

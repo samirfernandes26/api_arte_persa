@@ -2,18 +2,20 @@ import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
   Min,
 } from 'class-validator';
 import { MetodoPagamento } from '../../comum/enums/metodo-pagamento.enum';
 
 export class CriarFaturaDto {
-  @IsUUID()
-  ordem_servico_id!: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  ordem_servico_id!: number;
 
   @IsOptional()
   @IsString()

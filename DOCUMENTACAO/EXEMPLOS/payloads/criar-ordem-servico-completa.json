@@ -1,8 +1,8 @@
 {
-  "cliente_id": "6bce663f-0c4a-4908-b209-383e8b2334c5",
+  "cliente_id": 101,
   "canal_entrada": "whatsapp",
-  "responsavel_id": "1eb3a9dc-e772-41dc-b985-b71a3ce0998a",
-  "aprovado_por_desconto_id": "7ae567aa-4efe-4e08-afc0-e0f4035f96fd",
+  "responsavel_id": 2,
+  "aprovado_por_desconto_id": 1,
   "percentual_desconto": 12,
   "valor_frete": 45,
   "motivo_desconto": "Cliente recorrente com contrato anual de manutencao.",
@@ -39,7 +39,7 @@
       "cuidados_especiais": "Nao dobrar durante transporte.",
       "servicos_executados": [
         {
-          "servico_catalogo_id": "2db6c5ff-1c72-4aa3-a1e2-cd685ece2fd1",
+          "servico_catalogo_id": 11,
           "valor_unitario_snapshot": 1200,
           "quantidade": 1,
           "valor_desconto": 120,
@@ -65,7 +65,7 @@
       "estado_atual": "Poeira acumulada e leve desgaste no encosto.",
       "servicos_executados": [
         {
-          "servico_catalogo_id": "f459f7d1-1f37-4e4e-b0c4-56d7a3a65bc4",
+          "servico_catalogo_id": 12,
           "valor_unitario_snapshot": 450,
           "quantidade": 1,
           "valor_desconto": 0,

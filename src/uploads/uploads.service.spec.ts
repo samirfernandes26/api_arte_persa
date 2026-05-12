@@ -65,13 +65,13 @@ describe('ServicoUploads', () => {
     s3Mock.obterUrlObjeto.mockReturnValue('https://cdn.exemplo/arquivo');
     s3Mock.obterBucketPadrao.mockReturnValue('bucket-teste');
     prismaMock.ordemServico.findUnique.mockResolvedValue({
-      id: '11111111-1111-1111-1111-111111111111',
+      id: 101,
       ativo: true,
       data_exclusao: null,
     });
     prismaMock.itemOrdemServico.findUnique.mockResolvedValue({
-      id: '22222222-2222-2222-2222-222222222222',
-      ordem_servico_id: '11111111-1111-1111-1111-111111111111',
+      id: 202,
+      ordem_servico_id: 101,
       ativo: true,
       data_exclusao: null,
     });
@@ -87,20 +87,20 @@ describe('ServicoUploads', () => {
   });
 
   it('gera URL pre-assinada na pasta correta da ordem e item', async () => {
-    const uuidOrdem = '11111111-1111-1111-1111-111111111111';
-    const uuidItem = '22222222-2222-2222-2222-222222222222';
+    const idOrdem = 101;
+    const idItem = 202;
 
     await service.gerarUrlPreAssinada({
       tipo_destino: TipoDestinoUpload.FOTO_INICIAL_ITEM,
-      ordem_servico_id: uuidOrdem,
-      item_ordem_servico_id: uuidItem,
+      ordem_servico_id: idOrdem,
+      item_ordem_servico_id: idItem,
       nome_arquivo: 'Foto Inicial.JPG',
       tipo_mime: 'image/jpeg',
-    }, 'usuario-teste');
+    }, 7);
 
     expect(s3Mock.obterUrlPreAssinada).toHaveBeenCalledWith(
       expect.objectContaining({
-        chave: expect.stringContaining(`ordens/${uuidOrdem}/itens/${uuidItem}/`),
+        chave: expect.stringContaining(`ordens/${idOrdem}/itens/${idItem}/`),
         tipo_conteudo: 'image/jpeg',
       }),
     );

@@ -10,7 +10,7 @@ export class ItensService {
     private readonly uploadsService: ServicoUploads,
   ) {}
 
-  async listarPorOrdemServico(ordemServicoId: string) {
+  async listarPorOrdemServico(ordemServicoId: number) {
     return this.prisma.itemOrdemServico.findMany({
       where: {
         ordem_servico_id: ordemServicoId,
@@ -26,7 +26,7 @@ export class ItensService {
     });
   }
 
-  async buscarPorId(id: string) {
+  async buscarPorId(id: number) {
     const item = await this.prisma.itemOrdemServico.findUnique({
       where: { id },
       include: {
@@ -43,7 +43,7 @@ export class ItensService {
     return item;
   }
 
-  async atualizar(id: string, dto: AtualizarItemOrdemServicoDto, usuarioId: string) {
+  async atualizar(id: number, dto: AtualizarItemOrdemServicoDto, usuarioId: number) {
     const itemAtual = await this.buscarPorId(id);
 
     const fotoInicialConfirmada =
