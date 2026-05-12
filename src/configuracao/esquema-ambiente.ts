@@ -74,7 +74,7 @@ export const esquemaAmbiente = z.object({
   REDIS_BANCO: inteiroDoAmbiente.default(0),
   REDIS_TLS: booleanoDoAmbiente.default(false),
   JWT_SEGREDO_ACESSO: z.string().min(16),
-  JWT_TEMPO_ACESSO: z.string().min(2).default('15m'),
+  JWT_TEMPO_ACESSO: z.string().min(2).default('3d'),
   JWT_SEGREDO_REFRESH: z.string().min(16),
   JWT_TEMPO_REFRESH: z.string().min(2).default('30d'),
   JWT_EMISSOR: z.string().min(1),

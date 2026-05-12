@@ -166,7 +166,7 @@ export class AutenticacaoService {
       secret: this.configService.getOrThrow<string>('JWT_SEGREDO_ACESSO'),
       expiresIn: this.configService.get<string>(
         'JWT_TEMPO_ACESSO',
-        '15m',
+        '3d',
       ) as StringValue,
       issuer: this.configService.get<string>('JWT_EMISSOR') || undefined,
       audience: this.configService.get<string>('JWT_AUDIENCIA') || undefined,
